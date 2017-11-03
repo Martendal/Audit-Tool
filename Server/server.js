@@ -1,24 +1,37 @@
 var express = require('express');
-var mongoose = require('mongoose');//require('mongodb').MongoClient;
-mongoose.Promise = require('bluebird');
-//assert.equal(query.exec().constructor, require('bluebird'));
 var app = express();
-var url = 'mongodb://localhost:27017/auditTool';
 
-
-var promise = mongoose.createConnection(url, {
-	useMongoClient: true
-});
-promise.then(function(db) {
-	//Using db here
-	console.log('Connected');
+var mysql = require('mysql');
+var connection = mysql.createConnection({
+	host: 'localhost',
+	user: 'root',
+	password: 'root',
+	database: 'AuditTool'
 });
 
+connection.connect(function(err) {
+	if(!err) {
+		console.log('Connected to database');
+	}
+	else {
+		console.log('Error while connecting the database : \n', err);
+	}
+});
+connection.end();
 
 
 
 app.get('/', function(req, res) {
 	res.status(200).send('Bienvenue sur l\'accueil !');
+	connection.query('SELECT * from <table>',
+	function(err, rows, fields) {
+		if (!err) {
+			console.log('The solution is: ', rows);
+		}
+		else {
+			console.log('Error');
+		}
+	});
 });
 
 //Page not found

@@ -1,0 +1,21 @@
+{
+  "name": "audit-tool",
+  "version": "0.0.1",
+  "description": "A simple security audit tool",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Martendal/Audit-Tool.git"
+  },
+  "author": "Alexandre Bouillon, Julien Depaillat",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Martendal/Audit-Tool/issues"
+  },
+  "homepage": "https://github.com/Martendal/Audit-Tool#readme"
+}
