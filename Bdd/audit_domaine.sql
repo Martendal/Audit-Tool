@@ -1,5 +1,3 @@
-CREATE DATABASE  IF NOT EXISTS `audit` /*!40100 DEFAULT CHARACTER SET utf8 */;
-USE `audit`;
 -- MySQL dump 10.13  Distrib 5.7.17, for Win64 (x86_64)
 --
 -- Host: localhost    Database: audit
@@ -32,7 +30,7 @@ CREATE TABLE `domaine` (
   PRIMARY KEY (`iddomaine`),
   UNIQUE KEY `iddomaine_UNIQUE` (`iddomaine`),
   UNIQUE KEY `Nom_UNIQUE` (`Nom`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8 COMMENT='Le domaine regroupant des questions en rapport avec ce dernier';
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COMMENT='Le domaine regroupant des questions en rapport avec ce dernier';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -41,7 +39,6 @@ CREATE TABLE `domaine` (
 
 LOCK TABLES `domaine` WRITE;
 /*!40000 ALTER TABLE `domaine` DISABLE KEYS */;
-INSERT INTO `domaine` VALUES (1,'Physical Security',0,1),(2,'Personal Security',1,1),(3,'Data Security',2,1),(4,'TEst',0,0),(5,'Coucou',0,0),(7,'dzdz',NULL,0),(8,'azertty',2,0),(9,'azerty',2,0),(10,'azsx',2,0),(11,'trytrh',2,0),(12,'efzvfbggb',3,0),(13,'dgdrg',3,0);
 /*!40000 ALTER TABLE `domaine` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -54,4 +51,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-11-08 12:50:13
+-- Dump completed on 2017-11-08 18:41:44

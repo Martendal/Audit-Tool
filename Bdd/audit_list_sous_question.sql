@@ -1,5 +1,3 @@
-CREATE DATABASE  IF NOT EXISTS `audit` /*!40100 DEFAULT CHARACTER SET utf8 */;
-USE `audit`;
 -- MySQL dump 10.13  Distrib 5.7.17, for Win64 (x86_64)
 --
 -- Host: localhost    Database: audit
@@ -29,7 +27,7 @@ CREATE TABLE `list_sous_question` (
   `idmain_question` int(11) NOT NULL COMMENT 'L''index de la question principale',
   `idsous_question` int(11) NOT NULL COMMENT 'L''index de la sous-question',
   PRIMARY KEY (`idlist_sous_question`)
-) ENGINE=InnoDB AUTO_INCREMENT=35 DEFAULT CHARSET=utf8 COMMENT='Table contenant les sous-questions de chaque question';
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8 COMMENT='Table contenant les sous-questions de chaque question';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -38,6 +36,7 @@ CREATE TABLE `list_sous_question` (
 
 LOCK TABLES `list_sous_question` WRITE;
 /*!40000 ALTER TABLE `list_sous_question` DISABLE KEYS */;
+INSERT INTO `list_sous_question` VALUES (14,19,22),(15,19,23);
 /*!40000 ALTER TABLE `list_sous_question` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -50,4 +49,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-11-08 12:50:14
+-- Dump completed on 2017-11-08 18:41:44
