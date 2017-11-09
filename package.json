@@ -2,7 +2,7 @@
   "name": "audit-tool",
   "version": "0.0.1",
   "description": "A simple security audit tool",
-  "main": "index.js",
+  "main": "Server/server.js",
   "dependencies": {},
   "devDependencies": {},
   "scripts": {
