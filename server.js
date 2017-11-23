@@ -4,35 +4,90 @@ var morgan = require('morgan');
 var bodyParser = require('body-parser')
 var methodOverride = require('method-override');
 var mysql = require('mysql');
+var async = require('async');
 
 
 
-function getAllQuestionsByDomainID(pool, id, callback) {
+//Get a list of all packages on the database
+function getAllPackages(pool, callback) {
 	try{
 		pool.getConnection(function(err, connection) {
-			if (err){
+			if (err) {
 				throw err;
 			}
 			else {
-				connection.query("SELECT * FROM question WHERE DomaineID = " + mysql.escape(id), function(err, res) {
+				connection.query("SELECT * FROM package", function(err, res) {
 					connection.release();
-					if (err) throw err;
+					if(err) throw err;
 					return callback(res);
 				});
 			}
 		});
-
 	}
 	catch(e) {
 		console.log(e);
 	}
-	
+}
+
+
+//Get a list of questions Ids by using the package id
+function getAllQuestionsIdByPackageId(pool, id, callback) {
+	try{
+		pool.getConnection(function(err, connection) {
+			if(err) {
+				throw err;
+			}
+			else {
+				connection.query("SELECT * FROM package_question_list WHERE idpackage_question_list = " + mysql.escape(id), function(err, res) {
+					connection.release();
+					if(err) throw err;
+					return callback(res);
+				});
+			}
+		});
+	}
+	catch(e) {
+		console.log(e);
+	}
+}
+
+
+
+//Get all the questions associated to a list of ids
+function getAllQuestionsById(pool, ids, callback) {
+	var questions = [];
+	var iterations = ids.length;
+
+	for (id in ids) {
+		try{
+			pool.getConnection(function(err, connection) {
+			if (err){
+				throw err;
+			}
+			else {
+				connection.query("SELECT * FROM question WHERE idquestion = " + mysql.escape(ids[id].QuestionID) + " LIMIT 1", function(err, res) {
+					connection.release();
+					if (err) throw err;
+					questions.push(res[0]);
+					if(0 === --iterations) {
+						callback(questions);
+					}
+				});
+			}
+
+		});
+			
+		}
+		catch(e){
+			console.log(e);
+		}
+	}
 }
 
 
 
 
-
+//Connection pool
 var pool = mysql.createPool({
 	host: 'localhost',
 	user: 'root',
@@ -54,21 +109,25 @@ app.use(methodOverride());
 
 
 
-app.get('/test', function(req, res) {
-	if(res) {
-		res.send(req);
-	}
-});
 
-app.get('/QuestionsByDomain/:domainId', function(req, res) {
+app.get('/getAllQuestionsByPackageId/:packageId', function(req, res) {
 	if (res) {
-		getAllQuestionsByDomainID(pool, req.params.domainId, function(q) {
-			res.send(q);
+		getAllQuestionsIdByPackageId(pool, req.params.packageId, function(q) {
+			getAllQuestionsById(pool, q, function(questions){
+				res.send(questions);
+			});
 		});
-		//res.send(getAllQuestionsByDomainID(connection, req.params.domainId));
 	}
 });
 
+
+app.get('/getAllPackages', function(req, res) {
+	if(res) {
+		getAllPackages(pool, function(packages) {
+			res.send(packages);
+		});
+	}
+});
 
 
 app.get('/', function(req, res) {

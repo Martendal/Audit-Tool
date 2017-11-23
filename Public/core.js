@@ -9,9 +9,22 @@ auditTool.config(['$httpProvider', function($httpProvider) {
 ]);*/
 
 
-function getQuestionsByDomainId($scope, $http) {
-	console.log("coucou");
-	$http.get('/QuestionsByDomain/1').then(function(success) {
+function getAllPackages($scope, $http) {
+	$http.get('/getAllPackages').then(function(success) {
+		console.log(success.data);
+		$scope.list = function() {
+			$scope.packages = success.data;
+		}
+	}, function(error) {
+		console.log('Error: '+error);
+	});
+}
+
+
+
+function getQuestionsByPackageId($scope, $http) {
+	$http.get('/getAllQuestionsByPackageId/1').then(function(success) {
+		console.log("get");
 		console.log(success.data);
 		$scope.list = function() {
 			$scope.questions = success.data;
@@ -19,8 +32,6 @@ function getQuestionsByDomainId($scope, $http) {
 	}, function(error) {
 		console.log('Error: '+error);
 	});
-
-
 }
 
 
@@ -36,7 +47,7 @@ function getQuestionsByDomainId($scope, $http) {
 		}, function(error) {
 			console.log('Error: '+error);
 		});*/
-		getQuestionsByDomainId($scope, $http);
+		getQuestionsByPackageId($scope, $http);
 	});
 })(auditTool);
 
