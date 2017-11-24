@@ -7,7 +7,27 @@ auditTool.config(['$httpProvider', function($httpProvider) {
         delete $httpProvider.defaults.headers.common['X-Requested-With'];
     }
 ]);*/
-
+function menuController ($scope, $http) {
+	$scope.menuList = [
+		{
+			"menuName":"New Audit"
+		},
+		{
+			"menuName":"Saved Audit"
+		},
+		{
+			"menuName":"Import"
+		},
+		{
+			"menuName":"Parameters"
+		}
+	];
+	$scope.selectedMenuName = "New Audit";
+	$scope.selectMenu = function(name) {
+		$scope.selectedMenuName = name;
+		console.log(name);
+	}
+}
 
 function getAllPackages($scope, $http) {
 	$http.get('/getAllPackages').then(function(success) {
@@ -49,6 +69,10 @@ function getQuestionsByPackageId($scope, $http) {
 		});*/
 		getQuestionsByPackageId($scope, $http);
 	});
+
+	app.controller("menuController", function($scope, $http) {
+		menuController($scope, $http);
+	})
 })(auditTool);
 
 

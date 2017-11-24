@@ -21,16 +21,10 @@
 
     <div class="container-fluid">
       <div class="row">
-        <nav class="col-sm-3 col-md-2 hidden-xs-down bg-faded sidebar">
+        <nav class="col-sm-3 col-md-2 hidden-xs-down bg-faded sidebar" ng-controller="menuController">
           <ul class="nav nav-pills flex-column">
-            <li class="nav-item">
-              <a class="nav-link active" href="#">New Audit</span></a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Saved Audits</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Import</a>
+            <li class="nav-item" >
+              <a href="#" ng-click="selectMenu(menu.menuName)" ng-repeat="menu in menuList" ng-class="menu.menuName == selectedMenuName ? 'nav-link active' : 'nav-link'" >{{menu.menuName}}</a>
             </li>
           </ul>
         </nav>
