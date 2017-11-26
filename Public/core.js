@@ -1,32 +1,31 @@
-var auditTool = angular.module("auditTool", []);
+var auditTool = angular.module("auditTool", ["ngRoute"]);
 
 
-/*
-auditTool.config(['$httpProvider', function($httpProvider) {
-        $httpProvider.defaults.useXDomain = true;
-        delete $httpProvider.defaults.headers.common['X-Requested-With'];
-    }
-]);*/
+
 function menuController ($scope, $http) {
 	$scope.menuList = [
 		{
-			"menuName":"New Audit"
+			"menuName":"New Audit",
+			"href":"#!newaudit"
 		},
 		{
-			"menuName":"Saved Audit"
+			"menuName":"Saved Audits",
+			"href":"#!savedaudit"
 		},
 		{
-			"menuName":"Import"
+			"menuName":"Import",
+			"href":"#!import"
 		},
 		{
-			"menuName":"Parameters"
+			"menuName":"Parameters",
+			"href":"#!parameters"
 		}
 	];
 	$scope.selectedMenuName = "New Audit";
 	$scope.selectMenu = function(name) {
 		$scope.selectedMenuName = name;
 		console.log(name);
-	}
+	};
 }
 
 function getAllPackages($scope, $http) {
@@ -61,18 +60,34 @@ function getQuestionsByPackageId($scope, $http) {
 (function(app){
 	"use strict";
 	app.controller("mainController", function($scope, $http) {
-		/*console.log("coucou");
-		$http.get('/QuestionsByDomain/1').then(function(success) {
-			console.log(success.data[0].Explication);
-		}, function(error) {
-			console.log('Error: '+error);
-		});*/
 		getQuestionsByPackageId($scope, $http);
 	});
 
 	app.controller("menuController", function($scope, $http) {
 		menuController($scope, $http);
-	})
+	});
+
+	app.config(function($routeProvider) {
+		$routeProvider
+		.when("/", {
+			templateUrl : "newAudit.htm"
+		})
+		.when("/newaudit", {
+			templateUrl : "newAudit.htm"
+		})
+		.when("/savedaudit", {
+			templateUrl : "savedAudit.htm"
+		})
+		.when("/import", {
+			templateUrl : "import.htm"
+		})
+		.when("/parameters", {
+			templateUrl : "parameters.htm"
+		})
+		.otherwise({
+			templateUrl : "newAudit.htm"
+		});
+	});
 })(auditTool);
 
 

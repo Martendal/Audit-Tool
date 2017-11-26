@@ -143,5 +143,21 @@ app.get('/dashboard.css', function(req, res) {
 	res.sendFile(__dirname + '/Public/dashboard.css');
 });
 
+app.get('/newAudit.htm', function(req, res) {
+	res.sendFile(__dirname + '/Public/newAudit.htm');
+});
+
+app.get('/savedAudit.htm', function(req, res) {
+	res.sendFile(__dirname + '/Public/savedAudit.htm');
+});
+
+app.get('/import.htm', function(req, res) {
+	res.sendFile(__dirname + '/Public/import.htm');
+}); 
+
+app.get('/parameters.htm', function(req, res) {
+	res.sendFile(__dirname + '/Public/parameters.htm');
+});
+
 app.listen(8080);
 console.log("App listening on port 8080.");
