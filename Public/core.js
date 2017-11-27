@@ -41,8 +41,9 @@ function getAllPackages($scope, $http) {
 
 
 
-function getQuestionsByPackageId($scope, $http) {
-	$http.get('/getAllQuestionsByPackageId/1').then(function(success) {
+function getQuestionsByPackageId($scope, $http, id, callback) {
+	var questionsList = [];
+	$http.get('/getAllQuestionsByPackageId/' + id).then(function(success) {
 		console.log("get");
 		console.log(success.data);
 		$scope.list = function() {
@@ -54,26 +55,34 @@ function getQuestionsByPackageId($scope, $http) {
 }
 
 
+function getDefaultPackage($http, id) {
+	return $http({
+		method: 'GET',
+		url: '/getAllQuestionsByPackageId/' + id
+	});
+};
 
+
+function sortQuestionsByDomain(questions) {
+	var domainIds = [];
+	for(var i = 0; i<questions.length; i++) {
+		if(!domainIds.includes(questions[i].DomaineID)) {
+			domainIds.push(questions[i].DomaineID);
+		}
+	}
+	console.log(domainIds);
+}
 
 
 (function(app){
 	"use strict";
-	app.controller("mainController", function($scope, $http) {
-		getQuestionsByPackageId($scope, $http);
-	});
-
-	app.controller("menuController", function($scope, $http) {
-		menuController($scope, $http);
-	});
+	
 
 	app.config(function($routeProvider) {
 		$routeProvider
-		.when("/", {
-			templateUrl : "newAudit.htm"
-		})
 		.when("/newaudit", {
-			templateUrl : "newAudit.htm"
+			templateUrl : "newAudit.htm",
+			controller : "newAuditCtrl"
 		})
 		.when("/savedaudit", {
 			templateUrl : "savedAudit.htm"
@@ -88,6 +97,30 @@ function getQuestionsByPackageId($scope, $http) {
 			templateUrl : "newAudit.htm"
 		});
 	});
+
+	app.controller("mainController", function($scope, $http) {
+		//getQuestionsByPackageId($scope, $http);
+	});
+
+	app.controller("menuController", function($scope, $http) {
+		menuController($scope, $http);
+	});
+
+	app.controller("newAuditCtrl", function($scope, $http) {
+		//console.log("test");
+		// getQuestionsByPackageId($scope, $http, 1, function(q) {
+		// 	console.log("list : ", q);
+		// });
+		getDefaultPackage($http, 1).then(function(data) {
+			console.log("blablabla", data.data);
+			$scope.questions = data.data;
+			sortQuestionsByDomain(data.data);
+		}, function(err) {
+			console.log(err)
+		});
+		//sortQuestionsByDomain($scope.questions);
+	});
+
 })(auditTool);
 
 

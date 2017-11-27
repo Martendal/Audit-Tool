@@ -41,6 +41,7 @@ function getAllQuestionsIdByPackageId(pool, id, callback) {
 				connection.query("SELECT * FROM package_question_list WHERE idpackage_question_list = " + mysql.escape(id), function(err, res) {
 					connection.release();
 					if(err) throw err;
+					//console.log("getall : ", res);
 					return callback(res);
 				});
 			}
@@ -56,18 +57,21 @@ function getAllQuestionsIdByPackageId(pool, id, callback) {
 //Get all the questions associated to a list of ids
 function getAllQuestionsById(pool, ids, callback) {
 	var questions = [];
-	var iterations = ids.length;
-
+	/*var iterations = ids.length;
+	//console.log("ids = ", ids);
 	for (id in ids) {
+		//console.log("id = ", id);
 		try{
 			pool.getConnection(function(err, connection) {
 			if (err){
 				throw err;
 			}
 			else {
+				//console.log("id : ", ids[id].QuestionID);
 				connection.query("SELECT * FROM question WHERE idquestion = " + mysql.escape(ids[id].QuestionID) + " LIMIT 1", function(err, res) {
 					connection.release();
 					if (err) throw err;
+					//console.log(res[0]);
 					questions.push(res[0]);
 					if(0 === --iterations) {
 						callback(questions);
@@ -81,7 +85,41 @@ function getAllQuestionsById(pool, ids, callback) {
 		catch(e){
 			console.log(e);
 		}
-	}
+	}*/
+
+	async.forEach(ids, function(data, cb) {
+		try{
+			pool.getConnection(function(err, connection) {
+			if (err){
+				cb(err);
+			}
+			else {
+				//console.log("id : ", ids[id].QuestionID);
+				connection.query("SELECT * FROM question WHERE idquestion = " + mysql.escape(data.QuestionID) + " LIMIT 1", function(err, res) {
+					connection.release();
+					if (err) cb(err);
+					//console.log(res[0]);
+					else{
+						questions.push(res[0]);
+						cb();
+					}
+				});
+			}
+
+		});
+			
+		}
+		catch(e){
+			console.log(e);
+		}
+	}, function(err, res){
+		if(err) {
+			throw err;
+		}
+		else {
+			callback(questions)
+		}
+	});
 }
 
 
@@ -114,6 +152,7 @@ app.get('/getAllQuestionsByPackageId/:packageId', function(req, res) {
 	if (res) {
 		getAllQuestionsIdByPackageId(pool, req.params.packageId, function(q) {
 			getAllQuestionsById(pool, q, function(questions){
+				//console.log(questions);
 				res.send(questions);
 			});
 		});
