@@ -5,6 +5,7 @@ var bodyParser = require('body-parser')
 var methodOverride = require('method-override');
 var mysql = require('mysql');
 var async = require('async');
+var jquery = require('jquery');
 
 
 
@@ -57,36 +58,6 @@ function getAllQuestionsIdByPackageId(pool, id, callback) {
 //Get all the questions associated to a list of ids
 function getAllQuestionsById(pool, ids, callback) {
 	var questions = [];
-	/*var iterations = ids.length;
-	//console.log("ids = ", ids);
-	for (id in ids) {
-		//console.log("id = ", id);
-		try{
-			pool.getConnection(function(err, connection) {
-			if (err){
-				throw err;
-			}
-			else {
-				//console.log("id : ", ids[id].QuestionID);
-				connection.query("SELECT * FROM question WHERE idquestion = " + mysql.escape(ids[id].QuestionID) + " LIMIT 1", function(err, res) {
-					connection.release();
-					if (err) throw err;
-					//console.log(res[0]);
-					questions.push(res[0]);
-					if(0 === --iterations) {
-						callback(questions);
-					}
-				});
-			}
-
-		});
-			
-		}
-		catch(e){
-			console.log(e);
-		}
-	}*/
-
 	async.forEach(ids, function(data, cb) {
 		try{
 			pool.getConnection(function(err, connection) {
@@ -123,6 +94,111 @@ function getAllQuestionsById(pool, ids, callback) {
 }
 
 
+//Get domain name by id
+function getAssociatedDomainName(pool, id, callback) {
+	try{
+		pool.getConnection(function(err, connection) {
+			if(err) {
+				throw err;
+			}
+			else {
+				connection.query("SELECT * FROM domaine WHERE iddomaine = " + mysql.escape(id), function(err, res) {
+					connection.release();
+					if(err) throw err;
+					//console.log("getall : ", res);
+					/*return */callback(res);
+				});
+			}
+		});
+	}
+	catch(e) {
+		console.log(e);
+	}
+}
+
+
+function sortQuestionsByDomain (pool, questions, callback) {
+	var domains = [];
+	for(var i = 0; i<questions.length; i++) {
+		if(domains.filter(e => e.domainId == questions[i].DomaineID).length == 0) {
+			//console.log("domaine : ",getDomainNameById($http, questions[i].DomaineID));
+			var obj = {
+				domainId: questions[i].DomaineID,
+				domainName: "domaine",//getDomainNameById($http, questions[i].DomaineID),
+				questions: [questions[i]]
+			};
+			/*getAssociatedDomainName(pool, questions[i].DomaineID, function(dom) {
+				obj.domainName = dom;
+				domains.push(obj);
+			});*/
+			domains.push(obj);
+			
+		}
+		else{
+			/*var dom = jquery.grep(domains, function(e) { return e.domainId == questions[i].DomaineID});
+			if(dom.length == 1) {
+				dom[0].questions.push(questions[i]);
+			}*/
+			var k=0;
+			while(k < domains.length) {
+				if(domains[k].domainId == questions[i].DomaineID) {
+					domains[k].questions.push(questions[i]);
+					break;
+				}
+				k++;
+			}
+
+		}
+	}
+	callback(domains);
+}
+
+
+function transformIntoSurvey(domains) {
+	var json = {pages:[]};
+
+	//console.log(domains);
+	for(var i=0; i<domains.length; i++) {
+		var questions = {
+			questions: [
+				{
+					type:"matrix",
+					title: domains[i].domainName,
+					columns: [
+						{value: 1, text:"1"},
+						{value: 2, text:"2"},
+						{value: 3, text:"3"},
+						{value: 4, text:"4"},
+						{value: 5, text:"5"},
+						{value: 6, text:"Don't know"},
+						{value: 7, text:"Not concerned"},
+					],
+					rows:[]
+				}
+			]};
+		for(var j=0; j<domains[i].questions.length; j++) {
+			questions.questions[0].rows.push({value: 1, text: domains[i].questions[j].Question})
+		}
+		//console.log(questions);
+		json.pages.push(questions);
+	}
+	return json;
+}
+
+
+function createSurveyFromQuestions(pool, questions, callback) {
+	try{
+		//console.log("questions: ", questions);
+		sortQuestionsByDomain(pool, questions, function(sortedQuestions) {
+			//console.log("sortedquestions: ", sortedQuestions);
+			callback(transformIntoSurvey(sortedQuestions));
+		});
+	}
+	catch(e) {
+		console.log(e);
+	}
+}
+
 
 
 //Connection pool
@@ -152,18 +228,40 @@ app.get('/getAllQuestionsByPackageId/:packageId', function(req, res) {
 	if (res) {
 		getAllQuestionsIdByPackageId(pool, req.params.packageId, function(q) {
 			getAllQuestionsById(pool, q, function(questions){
-				//console.log(questions);
+				console.log(questions);
 				res.send(questions);
 			});
 		});
 	}
 });
 
+app.get('/getAssociatedDomainName/:domainId', function(req,res) {
+	if(res) {
+		getAssociatedDomainName(pool, req.params.domainId, function(dom) {
+			console.log(dom[0].Nom);
+			res.send(dom[0].Nom);
+		});
+	}
+});
 
 app.get('/getAllPackages', function(req, res) {
 	if(res) {
 		getAllPackages(pool, function(packages) {
 			res.send(packages);
+		});
+	}
+});
+
+app.get('/getPackage/:packageId', function(req, res) {
+	if(res) {
+		//console.log(req.params.packageId);
+		getAllQuestionsIdByPackageId(pool, req.params.packageId, function(q) {
+			getAllQuestionsById(pool, q, function(questions){
+				createSurveyFromQuestions(pool, questions, function(survey) {
+					console.log(survey);
+					res.send(survey);
+				});
+			});
 		});
 	}
 });

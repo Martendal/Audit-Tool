@@ -1,12 +1,46 @@
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://surveyjs.azureedge.net/0.97.0/survey.angular.min.js"></script>
+
 <h1>New Audit</h1>
-<div>
-	<table>
+
 		<!--
 		<th>Domaine test</th>
 		<td ng-repeat="question in questions">{{question.Question}}</td>
 -->
-		<tr ng-repeat="question in questions">
-			<td>{{question.Question}}</td>
-		</tr>
-	</table>
+
+			<!--<p>{{}}</p>
+			<tr ng-repeat="question in questions">
+				<td>{{question.Question}}</td>
+				<td>
+					<input type="radio" value="1" id="test">
+					<label for="test">1</label>
+				</td>
+			</tr>-->
+<div ng-app="auditTool" ng-controller="newAuditCtrl">
+	<div id="surveyElement"></div>
+	<div id="surveyResult"></div>
 </div>
+
+<script type="text/javascript">
+	var id = '1';
+	$.get('/getPackage/' + id, function(json) {
+		Survey.Survey.cssType = "bootstrap";
+		Survey.defaultBootstrapCss.navigationButton = "btn btn-green";
+
+		//var scope = angular.element($('ng-controller="newAuditCtrl"')).scope();
+
+		//var json =  angular.element(document.querySelector('[ng-controller="newAuditCtrl"]')).scope().survey;
+		window.survey = new Survey.Model(json);
+		console.log('json: ', json);
+		survey.onComplete.add(function(result) {
+		    document.querySelector('#surveyResult').innerHTML = "result: " + JSON.stringify(result.data);
+		});
+
+		$("#surveyElement").Survey({ 
+		    model: survey 
+		});
+	});
+
+</script>
+
+
