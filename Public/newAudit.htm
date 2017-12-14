@@ -1,0 +1,73 @@
+
+
+<h1>New Audit</h1>
+
+<div ng-app="auditTool" ng-controller="newAuditCtrl">
+	<div id="surveyElement"></div>
+	<div id="surveyResult"></div>
+    <canvas id="chartResult" width="400" height="400"></canvas>
+</div>
+
+<script type="text/javascript">
+	var id = '1';
+
+	$.get('/getPackage/' + id, function(json) {
+        console.log('json: ', json);
+	    Survey.Survey.cssType = "bootstrap";
+        Survey.defaultBootstrapCss.navigationButton = "btn btn-green";
+
+		window.survey = new Survey.Model(json);
+
+
+        survey.onComplete.add(function(result) {
+            //document.querySelector('#surveyResult').innerHTML = "result: " + JSON.stringify(result.data);
+            var ctx = document.getElementById("chartResult");
+            console.log(result.data);
+            var means = [];
+            var labels = [];
+            for (l=0; l<json.pages.length; l++) {
+                labels.push(json.pages[l].questions[0].title);
+                
+            }
+
+
+            var myChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Security of the company',
+                        data: [12, 19, 3, 5, 2, 3],
+                        
+                    }]
+                },
+                options: {
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero:true
+                            }
+                        }]
+                    }
+                }
+            });
+
+
+
+
+
+
+
+
+
+
+        });
+
+        $("#surveyElement").Survey({ 
+            model: survey 
+        });
+	});
+
+</script>
+
+
