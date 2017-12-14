@@ -163,7 +163,7 @@ function createDomainList($http, questions) {
 		});*/
 		//Survey.Survey.cssType = "bootstrap";
 		//Survey.defaultBootstrapCss.navigationButton = "btn btn-green";
-		getSurveyByPackageId($http, 1).then(function(data) {
+		/*getSurveyByPackageId($http, 1).then(function(data) {
 			//console.log(data);
 			var json = data;
 
@@ -198,7 +198,7 @@ function createDomainList($http, questions) {
 			document.addEventListener('DOMContentLoaded', function() {
 			    ng.platformBrowserDynamic.bootstrap(HelloApp);
 			});*/
-		});
+		//});
 	});
 
 })(auditTool);

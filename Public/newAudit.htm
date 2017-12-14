@@ -1,44 +1,71 @@
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-<script src="https://surveyjs.azureedge.net/0.97.0/survey.angular.min.js"></script>
+
 
 <h1>New Audit</h1>
 
-		<!--
-		<th>Domaine test</th>
-		<td ng-repeat="question in questions">{{question.Question}}</td>
--->
-
-			<!--<p>{{}}</p>
-			<tr ng-repeat="question in questions">
-				<td>{{question.Question}}</td>
-				<td>
-					<input type="radio" value="1" id="test">
-					<label for="test">1</label>
-				</td>
-			</tr>-->
 <div ng-app="auditTool" ng-controller="newAuditCtrl">
 	<div id="surveyElement"></div>
 	<div id="surveyResult"></div>
+    <canvas id="chartResult" width="400" height="400"></canvas>
 </div>
 
 <script type="text/javascript">
 	var id = '1';
+
 	$.get('/getPackage/' + id, function(json) {
-		Survey.Survey.cssType = "bootstrap";
-		Survey.defaultBootstrapCss.navigationButton = "btn btn-green";
+        console.log('json: ', json);
+	    Survey.Survey.cssType = "bootstrap";
+        Survey.defaultBootstrapCss.navigationButton = "btn btn-green";
 
-		//var scope = angular.element($('ng-controller="newAuditCtrl"')).scope();
-
-		//var json =  angular.element(document.querySelector('[ng-controller="newAuditCtrl"]')).scope().survey;
 		window.survey = new Survey.Model(json);
-		console.log('json: ', json);
-		survey.onComplete.add(function(result) {
-		    document.querySelector('#surveyResult').innerHTML = "result: " + JSON.stringify(result.data);
-		});
 
-		$("#surveyElement").Survey({ 
-		    model: survey 
-		});
+
+        survey.onComplete.add(function(result) {
+            //document.querySelector('#surveyResult').innerHTML = "result: " + JSON.stringify(result.data);
+            var ctx = document.getElementById("chartResult");
+            console.log(result.data);
+            var means = [];
+            var labels = [];
+            for (l=0; l<json.pages.length; l++) {
+                labels.push(json.pages[l].questions[0].title);
+                
+            }
+
+
+            var myChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Security of the company',
+                        data: [12, 19, 3, 5, 2, 3],
+                        
+                    }]
+                },
+                options: {
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero:true
+                            }
+                        }]
+                    }
+                }
+            });
+
+
+
+
+
+
+
+
+
+
+        });
+
+        $("#surveyElement").Survey({ 
+            model: survey 
+        });
 	});
 
 </script>

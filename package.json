@@ -3,7 +3,9 @@
   "version": "0.0.1",
   "description": "A simple security audit tool",
   "main": "Server/server.js",
-  "dependencies": {},
+  "dependencies": {
+    "chart.js": "^2.7.1"
+  },
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

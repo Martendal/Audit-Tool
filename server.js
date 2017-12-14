@@ -163,6 +163,7 @@ function transformIntoSurvey(domains) {
 			questions: [
 				{
 					type:"matrix",
+					name:domains[i].domainName+i,
 					title: domains[i].domainName,
 					columns: [
 						{value: 1, text:"1"},
@@ -177,11 +178,16 @@ function transformIntoSurvey(domains) {
 				}
 			]};
 		for(var j=0; j<domains[i].questions.length; j++) {
-			questions.questions[0].rows.push({value: 1, text: domains[i].questions[j].Question})
+			console.log(domains[i].questions[j]);
+			questions.questions[0].rows.push({value: domains[i].questions[j].idquestion, text: domains[i].questions[j].Question})
 		}
 		//console.log(questions);
+		//console.log(questions.questions[0]);
 		json.pages.push(questions);
+
 	}
+	//console.log(json.pages[0].questions[0]);
+	//console.log(json);
 	return json;
 }
 
@@ -258,7 +264,7 @@ app.get('/getPackage/:packageId', function(req, res) {
 		getAllQuestionsIdByPackageId(pool, req.params.packageId, function(q) {
 			getAllQuestionsById(pool, q, function(questions){
 				createSurveyFromQuestions(pool, questions, function(survey) {
-					console.log(survey);
+					//console.log(survey);
 					res.send(survey);
 				});
 			});
@@ -294,6 +300,10 @@ app.get('/import.htm', function(req, res) {
 
 app.get('/parameters.htm', function(req, res) {
 	res.sendFile(__dirname + '/Public/parameters.htm');
+});
+
+app.get('/node_modules/chart.js/dist/Chart.js', function(req, res) {
+	res.sendFile(__dirname + '/node_modules/chart.js/dist/Chart.js');
 });
 
 app.listen(8080);
