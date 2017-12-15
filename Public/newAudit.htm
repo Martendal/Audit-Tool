@@ -24,24 +24,26 @@
             var ctx = document.getElementById("chartResult");
             //console.log(result.data);
             var means = [];
+            var meansmax = [];
             var labels = [];
             
             for (l=0; l<json.pages.length; l++) {
                 labels.push(json.pages[l].questions[0].title);
                 var meantmp = 0;
+                var meantmp2 = 0;
                 var name = json.pages[l].questions[0].name;
                 var val = 0;
                 //console.log(result.data[name]["1"]);
                 var len = json.pages[l].questions[0].rows.length;
                 for(r=0; r<json.pages[l].questions[0].rows.length; r++) {
-                    console.log('tata');
                     val = parseInt(result.data[name][json.pages[l].questions[0].rows[r].value]);
-                    console.log("typeof val : ",typeof(val));
                     if(val < 6){
                         meantmp += val;
+                        meantmp2 += val;
                     }
                     else if(val == 6) {
                         //TODO: Calculate max and min means with extreme values of val for the "I don't know" option and create 2 other graphs on the radar graph
+                        meantmp2 += 5;
                     }
                     else {
                         len --;
@@ -49,7 +51,9 @@
                 }
                 console.log("meantmp = ", meantmp);
                 meantmp = meantmp/len;
+                meantmp2 = meantmp2/len;
                 means.push(meantmp);
+                meansmax.push(meantmp2);
             }
             console.log("means = ", means);
 
@@ -58,18 +62,23 @@
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Security of the company',
+                        label: 'Minimum security of the company',
                         data: means,
-                        
+                        backgroundColor: 'rgba(14,43,211,0.2)'              
+                    },{
+                        label: 'Maximum security of the company',
+                        data: meansmax,
+                        backgroundColor: 'rgba(111,89,122,0.2)'              
                     }]
                 },
                 options: {
-                    scales: {
-                        yAxes: [{
+                    scale: {
+                        
                             ticks: {
-                                beginAtZero:true
+                                min:0,
+                                max:5
                             }
-                        }]
+                        
                     }
                 }
             });
