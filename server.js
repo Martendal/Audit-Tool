@@ -178,7 +178,7 @@ function transformIntoSurvey(domains) {
 				}
 			]};
 		for(var j=0; j<domains[i].questions.length; j++) {
-			console.log(domains[i].questions[j]);
+			//console.log(domains[i].questions[j]);
 			questions.questions[0].rows.push({value: domains[i].questions[j].idquestion, text: domains[i].questions[j].Question})
 		}
 		//console.log(questions);
