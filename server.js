@@ -119,82 +119,64 @@ function getAssociatedDomainName(pool, id, callback) {
 
 function sortQuestionsByDomain (pool, questions, callback) {
 	var domains = [];
-	/*for(var i = 0; i<questions.length; i++) {
-		if(domains.filter(e => e.domainId == questions[i].DomaineID).length == 0) {
-			//console.log("domaine : ",getDomainNameById($http, questions[i].DomaineID));
+	
+	/* Retreives the domain name corresponding to the domainID of each question */
+	async.forEach(questions, function(data, cb) {
 			var obj = {
-				domainId: questions[i].DomaineID,
-				domainName: "domaine",//getDomainNameById($http, questions[i].DomaineID),
-				questions: [questions[i]]
+				domainId: data.DomaineID,	// The domain ID
+				domainName: "domaine",		// The domain name
+				questions: [data]			// The question associated to this domain
 			};
-			getAssociatedDomainName(pool, questions[i].DomaineID, function(dom) {
+
+			getAssociatedDomainName(pool, data.DomaineID, function(dom) // Retreives the correct domain name and push the result to the array
+			{
 				obj.domainName = dom[0].Nom;
-				//domains[i] = obj;
-
-				domains.push(obj);
-				console.log("domaine : ", domains[domains.length-1]);
-			});
-
-			
-		}
-		else{*/
-			/*var dom = jquery.grep(domains, function(e) { return e.domainId == questions[i].DomaineID});
-			if(dom.length == 1) {
-				dom[0].questions.push(questions[i]);
-			}*/
-		/*	var k=0;
-			while(k < domains.length) {
-				if(domains[k].domainId == questions[i].DomaineID) {
-					domains[k].questions.push(questions[i]);
-					break;
-				}
-				k++;
-			}
-
-		}
-	}
-	callback(domains);
-*/
-async.forEach(questions, function(data, cb) {
-		if(domains.filter(e => e.domainId == data.DomaineID).length == 0) {
-			//console.log("domaine : ",getDomainNameById($http, questions[i].DomaineID));
-			var obj = {
-				domainId: data.DomaineID,
-				domainName: "domaine",//getDomainNameById($http, questions[i].DomaineID),
-				questions: [data]
-			};
-			getAssociatedDomainName(pool, data.DomaineID, function(dom) {
-				obj.domainName = dom[0].Nom;
-				//domains[i] = obj;
-
 				domains.push(obj);
 				cb();
-				console.log("domaine : ", domains[domains.length-1]);
 			});
-
-			
-		}
-		else{
-			/*var dom = jquery.grep(domains, function(e) { return e.domainId == questions[i].DomaineID});
-			if(dom.length == 1) {
-				dom[0].questions.push(questions[i]);
-			}*/
-			var k=0;
-			while(k < domains.length) {
-				if(domains[k].domainId == data.DomaineID) {
-					domains[k].questions.push(data);
-					break;
-				}
-				k++;
-			}
-
-		}
 	}, function(err, res){
 		if(err) {
 			throw err;
 		}
 		else {
-			callback(domains);
+			var sortedDomains = [];	// The final domain array that regroups every question which belongs to the same domain
+			
+			for(var i = 0; i < domains.length; i++)
+			{
+				/* Checks if the domain ID is already present in the sorted array */
+				if (sortedDomains.filter(e => e.domainId == domains[i].domainId).length == 0) 
+				{ // It doesn't exist yet so we add it
+					var obj2 = {
+						domainId: domains[i].domainId,
+						domainName: domains[i].domainName,
+						questions: domains[i].questions
+					};
+					sortedDomains.push(obj2);
+				}
+				else 
+				{ // It does exist so we just add the question to the corresponding index of the array
+					var k = 0;
+
+					// Search for the corresponding index
+					while(k < sortedDomains.length)
+					{
+						if(domains[i].domainId == sortedDomains[k].domainId)
+						{ // We found it, let's add the question
+							sortedDomains[k].questions.push(domains[i].questions[0]);
+							break;
+						}
+						k++;
+					}
+				}
+			}
+			
+			/* Sorts the final array by the domainId (ascending order) */
+			sortedDomains.sort(function(a, b)
+			{
+				return a.domainId - b.domainId;
+			});
+			//console.log ("sortedDomains : ", sortedDomains);
+			callback(sortedDomains);
 		}
 	});
 }
