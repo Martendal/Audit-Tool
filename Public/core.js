@@ -23,6 +23,10 @@ function menuController ($scope, $http) {
 		{
 			"menuName":"Parameters",
 			"href":"#!parameters"
+		},
+		{
+			"menuName":"Manage Database",
+			"href":"#!managedatabase"
 		}
 	];
 	$scope.selectedMenuName = "New Audit";
@@ -137,6 +141,9 @@ function createDomainList($http, questions) {
 		})
 		.when("/parameters", {
 			templateUrl : "parameters.htm"
+		})
+		.when("/managedatabase", {
+			templateUrl : "managedatabase.htm"
 		})
 		.otherwise({
 			templateUrl : "newAudit.htm"

@@ -1,5 +1,3 @@
-CREATE DATABASE  IF NOT EXISTS `audit` /*!40100 DEFAULT CHARACTER SET utf8 */;
-USE `audit`;
 -- MySQL dump 10.13  Distrib 5.7.17, for Win64 (x86_64)
 --
 -- Host: localhost    Database: audit
@@ -261,6 +259,71 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `Add_Domain_To_Package` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8 */ ;
+/*!50003 SET character_set_results = utf8 */ ;
+/*!50003 SET collation_connection  = utf8_general_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `Add_Domain_To_Package`(IN NomPackage VARCHAR(250), IN DomaineID INT)
+add_domain_to_package:BEGIN
+
+    DECLARE size int;        		-- La taille totale de la table des questions
+	DECLARE i int;			 		-- Un compteur
+    DECLARE temp int;
+
+	if DomaineID = 0 or DomaineID IS NULL or NomPackage IS NULL then
+		leave add_domain_to_package;
+    end if;
+    
+    call Reset_Table_Auto_Increment('package_question_list');
+    
+    if (SELECT domaine.NumOfChild FROM audit.domaine where audit.domaine.iddomaine = DomaineID) > 0 then
+		
+        SET max_sp_recursion_depth = 30;
+        
+        -- Initilise des variables --
+		SET i = 0;										
+		--
+        
+        -- Recherche le sous-domaine le plus bas et effectue les bonnes opérations (Récursif)
+        while (i < (select NumOfChild from domaine where iddomaine = DomaineID)) do
+			call Add_Domain_To_Package (NomPackage, (select idsous_domaine from list_sous_domaine where idmain_domaine = DomaineID limit 1));
+            SET i = i + 1;
+		end while;
+		--
+        
+	end if;
+    
+    -- Initilise des variables --
+	SET size = (SELECT COUNT(*) from audit.question);
+	SET i = 0;										
+	--
+    
+    -- Parcourt toute la table des questions pour ajouter toutes celles ayant le même ID de domaine que celui placé en paramètre
+	while (i < size) do
+		
+		if ((select audit.question.DomaineID from audit.question limit i,1) = DomaineID) then 
+        
+			insert into package_question_list (Nom, QuestionID, DomaineID)
+			value (NomPackage, (select audit.question.idquestion from audit.question limit i, 1), DomaineID)
+			on duplicate key update Nom = Nom;
+            
+		end if;
+        
+		SET i = i+1;
+	end while;
+	--
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `Add_Question` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -271,7 +334,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`localhost` PROCEDURE `Add_Question`(IN Question mediumtext, IN Explication LONGTEXT, IN ImagePath VARCHAR(255), IN Numero INT, IN ParentID INT, IN DomaineID INT)
+CREATE DEFINER=`root`@`localhost` PROCEDURE `Add_Question`(IN Question mediumtext, IN Explication LONGTEXT, IN ImagePath VARCHAR(255), IN Numero INT, IN ParentID INT, IN DomaineID INT, IN CoeffID INT)
 add_question:BEGIN
 /*
 *	Ajoute une nouvelle question et remplit la table des sous-questions en fontion des données placées en paramètres
@@ -304,8 +367,8 @@ add_question:BEGIN
     SET last_index = (SELECT LAST_INSERT_ID()); 
     
     -- Tente d'ajouter une nouvelle question, ne fait rien en cas de doublon
-	insert into Question (Question, Explication, Image, Numero, ParentID, DomaineID)
-	value (Question, Explication, ImagePath, Numero, ParentID, DomaineID)
+	insert into Question (Question, Explication, Image, Numero, ParentID, DomaineID, CoeffID)
+	value (Question, Explication, ImagePath, Numero, ParentID, DomaineID, CoeffID)
     on duplicate key update Question = Question;
     --
     
@@ -584,4 +647,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-12-14 17:38:50
+-- Dump completed on 2018-01-03 19:05:40

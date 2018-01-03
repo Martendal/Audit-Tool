@@ -39,7 +39,7 @@ function getAllQuestionsIdByPackageId(pool, id, callback) {
 				throw err;
 			}
 			else {
-				connection.query("SELECT * FROM package_question_list WHERE idpackage_question_list = " + mysql.escape(id), function(err, res) {
+				connection.query("SELECT * FROM package_question_list WHERE PackageID = " + mysql.escape(id), function(err, res) {
 					connection.release();
 					if(err) throw err;
 					//console.log("getall : ", res);
@@ -102,7 +102,7 @@ function getAssociatedDomainName(pool, id, callback) {
 				throw err;
 			}
 			else {
-				connection.query("SELECT * FROM domaine WHERE iddomaine = " + mysql.escape(id), function(err, res) {
+				connection.query("SELECT Nom FROM domaine WHERE iddomaine = " + mysql.escape(id), function(err, res) {
 					connection.release();
 					if(err) throw err;
 					//console.log("getall : ", res);
@@ -119,7 +119,7 @@ function getAssociatedDomainName(pool, id, callback) {
 
 function sortQuestionsByDomain (pool, questions, callback) {
 	var domains = [];
-	for(var i = 0; i<questions.length; i++) {
+	/*for(var i = 0; i<questions.length; i++) {
 		if(domains.filter(e => e.domainId == questions[i].DomaineID).length == 0) {
 			//console.log("domaine : ",getDomainNameById($http, questions[i].DomaineID));
 			var obj = {
@@ -127,19 +127,22 @@ function sortQuestionsByDomain (pool, questions, callback) {
 				domainName: "domaine",//getDomainNameById($http, questions[i].DomaineID),
 				questions: [questions[i]]
 			};
-			/*getAssociatedDomainName(pool, questions[i].DomaineID, function(dom) {
-				obj.domainName = dom;
+			getAssociatedDomainName(pool, questions[i].DomaineID, function(dom) {
+				obj.domainName = dom[0].Nom;
+				//domains[i] = obj;
+
 				domains.push(obj);
-			});*/
-			domains.push(obj);
+				console.log("domaine : ", domains[domains.length-1]);
+			});
+
 			
 		}
-		else{
+		else{*/
 			/*var dom = jquery.grep(domains, function(e) { return e.domainId == questions[i].DomaineID});
 			if(dom.length == 1) {
 				dom[0].questions.push(questions[i]);
 			}*/
-			var k=0;
+		/*	var k=0;
 			while(k < domains.length) {
 				if(domains[k].domainId == questions[i].DomaineID) {
 					domains[k].questions.push(questions[i]);
@@ -151,6 +154,49 @@ function sortQuestionsByDomain (pool, questions, callback) {
 		}
 	}
 	callback(domains);
+*/
+async.forEach(questions, function(data, cb) {
+		if(domains.filter(e => e.domainId == data.DomaineID).length == 0) {
+			//console.log("domaine : ",getDomainNameById($http, questions[i].DomaineID));
+			var obj = {
+				domainId: data.DomaineID,
+				domainName: "domaine",//getDomainNameById($http, questions[i].DomaineID),
+				questions: [data]
+			};
+			getAssociatedDomainName(pool, data.DomaineID, function(dom) {
+				obj.domainName = dom[0].Nom;
+				//domains[i] = obj;
+
+				domains.push(obj);
+				cb();
+				console.log("domaine : ", domains[domains.length-1]);
+			});
+
+			
+		}
+		else{
+			/*var dom = jquery.grep(domains, function(e) { return e.domainId == questions[i].DomaineID});
+			if(dom.length == 1) {
+				dom[0].questions.push(questions[i]);
+			}*/
+			var k=0;
+			while(k < domains.length) {
+				if(domains[k].domainId == data.DomaineID) {
+					domains[k].questions.push(data);
+					break;
+				}
+				k++;
+			}
+
+		}
+	}, function(err, res){
+		if(err) {
+			throw err;
+		}
+		else {
+			callback(domains);
+		}
+	});
 }
 
 
@@ -300,6 +346,10 @@ app.get('/import.htm', function(req, res) {
 
 app.get('/parameters.htm', function(req, res) {
 	res.sendFile(__dirname + '/Public/parameters.htm');
+});
+
+app.get('/managedatabase.htm', function(req, res) {
+	res.sendFile(__dirname + '/Public/managedatabase.htm');
 });
 
 app.get('/node_modules/chart.js/dist/Chart.js', function(req, res) {
