@@ -4,7 +4,9 @@
 .tab {
     overflow: hidden;
     border: 1px solid #ccc;
+    border-collapse: collapse;
     background-color: #f1f1f1;
+
 }
 
 .tab button {
@@ -31,50 +33,123 @@
     border: 1px solid #ccc;
     border-top: none;
 }
+
+td {
+  width: auto;
+  padding: 5px;
+  border: 1px solid black;
+}
+
+.sombre {
+  background-color: #f1f1f1;
+  border-style: outset;
+  border-radius: 5px;
+  border: 3px;
+
+}
+
+.clair {
+  background-color: #2fffff;
+  border-style: outset;
+  border-radius: 5px;
+  border: 3px;
+}
+
+.rightSide {
+  position: relative;
+  right: 0px; 
+}
+
+.buttonAdd {
+  background-image: url('/Icones/add_button.png');
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
+  background-color: transparent;
+
+  width: 25px;
+  height: 25px;
+  border: none;
+}
+
+.buttonDelete {
+  background-image: url('/Icones/delete_button.png');
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
+  background-color: transparent;
+
+  width: 25px;
+  height: 25px;
+  border: none;
+}
+
+.buttonEdit {
+  background-image: url('/Icones/edit_button.png');
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
+  background-color: transparent;
+
+  width: 25px;
+  height: 25px;
+  border: none;
+}
+
 </style>
 
-<script>
-	function openCity(evt, cityName) {
-    // Declare all variables
-    var i, tabcontent, tablinks;
+<script type="text/javascript" src="dbManager.js"></script>
 
-    // Get all elements with class="tabcontent" and hide them
-    tabcontent = document.getElementsByClassName("tabcontent");
-    for (i = 0; i < tabcontent.length; i++) {
-        tabcontent[i].style.display = "none";
-    }
+<table>
+<td id="tabs" class="tabd"> <button class="tab">teete</button> </td>
+</table>
+<div id="tab-content"></div>
 
-    // Get all elements with class="tablinks" and remove the class "active"
-    tablinks = document.getElementsByClassName("tablinks");
-    for (i = 0; i < tablinks.length; i++) {
-        tablinks[i].className = tablinks[i].className.replace(" active", "");
-    }
+<script type="text/javascript">
 
-    // Show the current tab, and add an "active" class to the button that opened the tab
-    document.getElementById(cityName).style.display = "block";
-    evt.currentTarget.className += " active";
+function addQuestion (parentQuestion, domainID)
+{
+  console.log ("id: ", parentQuestion);
+  console.log ("domainID: ", domainID);
 }
+
+function putQuestionInForm (domainId, domainsAndQuestions)
+{
+  tabcontent = [];
+    for (var i = 0; i < domainsAndQuestions.questions[domainId].length; i++) {
+      console.log("question domain " + domainId + ": ", domainsAndQuestions.questions[domainId][i].Question);
+      if (i%2 == 0) tabcontent.push("<div id=\"" + i + "\" class=\"clair\">" + domainsAndQuestions.questions[domainId][i].Question + "</br><button id=\"" + domainsAndQuestions.questions[domainId][i].idquestion + "\" class=\"rightSide buttonAdd\" onClick=\"addQuestion(" + domainsAndQuestions.questions[domainId][i].idquestion + "," + domainsAndQuestions.questions[domainId][i].DomaineID + ");\" /><button id=\"1\" class=\"rightSide buttonEdit\" /><button id=\"1\" class=\"rightSide buttonDelete\" /></div>");
+      else tabcontent.push("<div id=\"" + i + "\" class=\"sombre\">" + domainsAndQuestions.questions[domainId][i].Question + "</div>");
+    }
+    return tabcontent;
+}
+
+$.get('/getDomains', function(domainsAndQuestions) {
+	tab = [];
+  tabcontent = [];
+	for (var i = 0; i < domainsAndQuestions.domains.length; i++) {
+		
+		var obj =
+		{	
+			id: i,
+			caption: domainsAndQuestions.domains[i].Nom,
+			closable: true
+		};
+		  //console.log ("obj: ", obj);
+		  tab.push(obj);
+      //tabcontent.push(domainsAndQuestions.questions[i][0].Question);
+   	}
+    //console.log("tab: ", tab);
+	$('#tabs').w2tabs({
+								name: 'Domains',
+								active: '0',
+								tabs: tab,
+								onClick: function (event) {
+                    console.log("id: ", event.target);
+                    tabcontent = putQuestionInForm(event.target, domainsAndQuestions);  
+										$('#tab-content').html(tabcontent);
+									}
+								});
+});
+
+
+
+
 </script>
-
-<!-- Tab links -->
-<div class="tab">
-  <button class="tablinks" onclick="openCity(event, 'London')">London</button>
-  <button class="tablinks" onclick="openCity(event, 'Paris')">Paris</button>
-  <button class="tablinks" onclick="openCity(event, 'Tokyo')">Tokyo</button>
-</div>
-
-<!-- Tab content -->
-<div id="London" class="tabcontent">
-  <h3>London</h3>
-  <p>London is the capital city of England.</p>
-</div>
-
-<div id="Paris" class="tabcontent">
-  <h3>Paris</h3>
-  <p>Paris is the capital of France.</p> 
-</div>
-
-<div id="Tokyo" class="tabcontent">
-  <h3>Tokyo</h3>
-  <p>Tokyo is the capital of Japan.</p>
-</div>

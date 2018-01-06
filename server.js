@@ -30,6 +30,101 @@ function getAllPackages(pool, callback) {
 	}
 }
 
+/*******************************************************************/
+/*					  Get a list of all domains 	               */
+/*													      		   */
+/*	@Param pool       : the database  							   */
+/*	@Param callback   : the array containing all the associations  */
+/***************************** *************************************/
+function getAllDomains(pool, callback)
+{
+	try{
+		pool.getConnection(function(err, connection) {
+			if(err) {
+				throw err;
+			}
+			else {
+				connection.query("SELECT * FROM domaine", function(err, res) {
+					connection.release();
+					if(err) throw err;
+					console.log("getAllDomains : ", res);
+					return callback(res);
+				});
+			}
+		});
+	}
+	catch(e) {
+		console.log(e);
+	}
+}
+
+
+/*******************************************************************/
+/*					  Get a list of all domains 	               */
+/*													      		   */
+/*	@Param pool       : the database  							   */
+/*  @Param domainId   : the domain ID                              */
+/*	@Param callback   : the array containing all the associations  */
+/***************************** *************************************/
+function getAllDomainsQuestions(pool, domainId, callback)
+{
+	var domainsAndQuestions = {
+		domains: [],
+		questions: []
+	};
+	async.forEach(domainId, function(data, cb) {
+		try{
+			pool.getConnection(function(err, connection) {
+				if(err) {
+					throw err;
+				}
+				else {
+					console.log ("domaine: ", data.iddomaine);
+					connection.query("SELECT * FROM question where DomaineId = " + mysql.escape(data.iddomaine), function(err, res) {
+						connection.release();
+						if (err) cb(err);
+						else{
+
+						//console.log(res);
+							domainsAndQuestions.domains.push(data);
+							domainsAndQuestions.questions.push(res);
+							cb();
+						}
+					});
+				}
+			});
+		}
+		catch(e) {
+			console.log(e);
+		}
+	}, function(err, res){
+		if(err) {
+			throw err;
+		}
+		else {
+
+			/* Sorts the final array by the domainId and by the number the question should appear in the list (ascending order) */
+			domainsAndQuestions.questions.sort(function(a, b)
+			{
+				if (a.DomaineID == b.DomaineID) return a.Numero - b.Numero;	// Same domain
+				else if (a.DomaineID < b.DomaineID) return a.DomaineID;		// Different domain
+				else return b.DomaineID;									// Different domain
+			});
+
+			/* Sorts the final array by the domainId (ascending order) */
+			domainsAndQuestions.domains.sort(function(a, b)
+			{
+				return a.domainId - b.domainId;									// Different domain
+			});
+
+			//console.log("question , ", questions);
+			console.log("domains: ", domainsAndQuestions.domains);
+			console.log("questions: ", domainsAndQuestions.questions);
+			callback(domainsAndQuestions);
+		}
+	});
+}
+
 
 //Get a list of questions Ids by using the package id
 function getAllQuestionsIdByPackageId(pool, id, callback) {
@@ -88,6 +183,15 @@ function getAllQuestionsById(pool, ids, callback) {
 			throw err;
 		}
 		else {
+
+			/* Sorts the final array by the domainId and by the number the question should appear in the list (ascending order) */
+			questions.sort(function(a, b)
+			{
+				if (a.DomaineID == b.DomaineID) return a.Numero - b.Numero;	// Same domain
+				else if (a.DomaineID < b.DomaineID) return a.DomaineID;		// Different domain
+				else return b.DomaineID;									// Different domain
+			});
+			//console.log("question , ", questions);
 			callback(questions)
 		}
 	});
@@ -117,7 +221,14 @@ function getAssociatedDomainName(pool, id, callback) {
 }
 
 
-function sortQuestionsByDomain (pool, questions, callback) {
+/**************************************************************************************/
+/*						Associate question to their domain name 	                  */
+/*																		      		  */
+/*	@Param pool       : the database  												  */
+/*	@Param questions  : all the questions that need to be associated to their domain  */
+/*	@Param callback   : the array containing all the associations					  */
+/**************************************************************************************/
+function associateQuestionsToDomainName (pool, questions, callback) {
 	var domains = [];
 	
 	/* Retreives the domain name corresponding to the domainID of each question */
@@ -194,13 +305,13 @@ function transformIntoSurvey(domains) {
 					name:domains[i].domainName+i,
 					title: domains[i].domainName,
 					columns: [
-						{value: 1, text:"1"},
-						{value: 2, text:"2"},
-						{value: 3, text:"3"},
-						{value: 4, text:"4"},
-						{value: 5, text:"5"},
-						{value: 6, text:"Don't know"},
-						{value: 7, text:"Not concerned"},
+						{type: "radio", value: 1, text:"1", id: 1},
+						{type: "radio", value: 2, text:"2", id: 2},
+						{type: "radio", value: 3, text:"3", id: 3},
+						{type: "radio", value: 4, text:"4", id: 4},
+						{type: "radio", value: 5, text:"5", id: 5},
+						{type: "radio", value: 6, text:"Don't know", id: "6", checked: true, default: true},
+						{type: "radio", value: 7, text:"Not concerned", id: 7},
 					],
 					rows:[]
 				}
@@ -223,7 +334,7 @@ function transformIntoSurvey(domains) {
 function createSurveyFromQuestions(pool, questions, callback) {
 	try{
 		//console.log("questions: ", questions);
-		sortQuestionsByDomain(pool, questions, function(sortedQuestions) {
+		associateQuestionsToDomainName(pool, questions, function(sortedQuestions) {
 			//console.log("sortedquestions: ", sortedQuestions);
 			callback(transformIntoSurvey(sortedQuestions));
 		});
@@ -300,6 +411,24 @@ app.get('/getPackage/:packageId', function(req, res) {
 	}
 });
 
+app.get('/Icones/:icon', function(req, res) {
+	res.sendFile(__dirname + '/Public/Icones/' + req.params.icon);
+}); 
+
+app.get('/getDomains', function(req, res)
+{
+	if(res)
+	{
+		getAllDomains(pool, function (domains)
+		{
+			getAllDomainsQuestions(pool, domains, function (domainsAndQuestions)
+			{
+				res.send (domainsAndQuestions);
+			});
+			//res.send (domains);
+		});
+	}
+});
 
 app.get('/', function(req, res) {
 	res.sendFile(__dirname + '/Public/index.html');
@@ -308,6 +437,14 @@ app.get('/', function(req, res) {
 
 app.get('/core.js', function(req, res) {
 	res.sendFile(__dirname + '/Public/core.js');
+});
+
+app.get('/dbManager.js', function(req, res) {
+	res.sendFile(__dirname + '/Public/dbManager.js');
+});
+
+app.get('/node_modules/w2ui/w2ui-1.4.3.js', function(req, res) {
+	res.sendFile(__dirname + '/node_modules/w2ui/w2ui-1.4.3.js');
 });
 
 app.get('/dashboard.css', function(req, res) {
@@ -337,6 +474,8 @@ app.get('/managedatabase.htm', function(req, res) {
 app.get('/node_modules/chart.js/dist/Chart.js', function(req, res) {
 	res.sendFile(__dirname + '/node_modules/chart.js/dist/Chart.js');
 });
+
+
 
 app.listen(8080);
 console.log("App listening on port 8080.");

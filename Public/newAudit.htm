@@ -14,11 +14,17 @@
 	$.get('/getPackage/' + id, function(json) {
         console.log('json: ', json);
 	    Survey.Survey.cssType = "bootstrap";
-        Survey.defaultBootstrapCss.navigationButton = "btn btn-green";
+        //Survey.defaultBootstrapCss.navigationButton = "btn btn-green";
 
 		window.survey = new Survey.Model(json);
 
-
+        var myCss = {
+            matrix: {
+                root: "table table-striped"
+            },
+            navigationButton: "button btn-lg"
+        };
+       
         survey.onComplete.add(function(result) {
             //document.querySelector('#surveyResult').innerHTML = "result: " + JSON.stringify(result.data);
             var ctx = document.getElementById("chartResult");
@@ -94,9 +100,9 @@
 
         });
 
-        $("#surveyElement").Survey({ 
-            model: survey 
-        });
+        $("#surveyElement").Survey({model: survey, css: myCss});
+        
+        $("#surveyResult").checked = true;
 	});
 
 </script>

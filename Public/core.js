@@ -143,7 +143,8 @@ function createDomainList($http, questions) {
 			templateUrl : "parameters.htm"
 		})
 		.when("/managedatabase", {
-			templateUrl : "managedatabase.htm"
+			templateUrl : "managedatabase.htm",	
+			controller : "databaseManagerCtrl"
 		})
 		.otherwise({
 			templateUrl : "newAudit.htm"
@@ -207,6 +208,7 @@ function createDomainList($http, questions) {
 			});*/
 		//});
 	});
+	app.controller("databaseManagerCtrl", function($scope, $http) { });
 
 })(auditTool);
 
