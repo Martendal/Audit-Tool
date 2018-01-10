@@ -443,10 +443,6 @@ app.get('/dbManager.js', function(req, res) {
 	res.sendFile(__dirname + '/Public/dbManager.js');
 });
 
-app.get('/node_modules/w2ui/w2ui-1.4.3.js', function(req, res) {
-	res.sendFile(__dirname + '/node_modules/w2ui/w2ui-1.4.3.js');
-});
-
 app.get('/dashboard.css', function(req, res) {
 	res.sendFile(__dirname + '/Public/dashboard.css');
 });
