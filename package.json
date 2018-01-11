@@ -4,8 +4,7 @@
   "description": "A simple security audit tool",
   "main": "Server/server.js",
   "dependencies": {
-    "chart.js": "^2.7.1",
-    "w2ui.js" : "^1.4"
+    "chart.js": "^2.7.1"
   },
   "devDependencies": {},
   "scripts": {

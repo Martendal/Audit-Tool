@@ -6,8 +6,12 @@ var methodOverride = require('method-override');
 var mysql = require('mysql');
 var async = require('async');
 var jquery = require('jquery');
+var dbManager = require('./Scripts/Private/dbManager.js');
 
-
+var domainsAndQuestions = {
+	domains: [],
+	questions: []
+};
 
 //Get a list of all packages on the database
 function getAllPackages(pool, callback) {
@@ -31,6 +35,34 @@ function getAllPackages(pool, callback) {
 }
 
 /*******************************************************************/
+/*				   Get a list of all coefficients 	               */
+/*													      		   */
+/*	@Param pool       : the database  							   */
+/*	@Param callback   : the array containing all the coefficients  */
+/***************************** *************************************/
+function getCoefficients(pool, callback)
+{
+	try{
+		pool.getConnection(function(err, connection) {
+			if (err) {
+				throw err;
+			}
+			else {
+				connection.query("SELECT idcoefficient, Valeur, Couleur FROM coefficient", function(err, res) {
+					connection.release();
+					if(err) throw err;
+					return callback(res);
+				});
+			}
+		});
+	}
+	catch(e) {
+		console.log(e);
+	}
+}
+
+
+/*******************************************************************/
 /*					  Get a list of all domains 	               */
 /*													      		   */
 /*	@Param pool       : the database  							   */
@@ -47,7 +79,7 @@ function getAllDomains(pool, callback)
 				connection.query("SELECT * FROM domaine", function(err, res) {
 					connection.release();
 					if(err) throw err;
-					console.log("getAllDomains : ", res);
+					//console.log("getAllDomains : ", res);
 					return callback(res);
 				});
 			}
@@ -79,7 +111,7 @@ function getAllDomainsQuestions(pool, domainId, callback)
 					throw err;
 				}
 				else {
-					console.log ("domaine: ", data.iddomaine);
+					//console.log ("domaine: ", data.iddomaine);
 					connection.query("SELECT * FROM question where DomaineId = " + mysql.escape(data.iddomaine), function(err, res) {
 						connection.release();
 						if (err) cb(err);
@@ -118,8 +150,8 @@ function getAllDomainsQuestions(pool, domainId, callback)
 			});
 
 			//console.log("question , ", questions);
-			console.log("domains: ", domainsAndQuestions.domains);
-			console.log("questions: ", domainsAndQuestions.questions);
+			//console.log("domains: ", domainsAndQuestions.domains);
+			//console.log("questions: ", domainsAndQuestions.questions);
 			callback(domainsAndQuestions);
 		}
 	});
@@ -356,6 +388,13 @@ var pool = mysql.createPool({
 });
 
 
+getAllDomains (pool, function (res)
+{
+	getAllDomainsQuestions(pool, res, function (r_domainsAndQuestions)
+	{
+		domainsAndQuestions.questions.push(questions.questions);
+	});
+});
 
 
 app.use(express.static(__dirname + '../Public'));
@@ -430,6 +469,25 @@ app.get('/getDomains', function(req, res)
 	}
 });
 
+app.get('/getCoefficients', function(req, res)
+{
+	if(res)
+	{
+		getCoefficients(pool, function (coefficients)
+		{
+			res.send (coefficients);
+		});
+	}
+});
+
+app.get('/addQuestion/:ParentID/:DomainID/:Question/:CoeffID/:Explication?', function (req, res)
+{
+	if(res)
+	{
+		dbManager.addQuestion(pool, req.params.ParentID, req.params.DomainID, req.params.Question, req.params.Explication, req.params.CoeffID, domainsAndQuestions);
+	}
+});
+
 app.get('/', function(req, res) {
 	res.sendFile(__dirname + '/Public/index.html');
 	//res.sendFile(__dirname + '/Public/core.js');
@@ -440,7 +498,7 @@ app.get('/core.js', function(req, res) {
 });
 
 app.get('/dbManager.js', function(req, res) {
-	res.sendFile(__dirname + '/Public/dbManager.js');
+	res.sendFile(__dirname + '/Scripts/Public/dbManager.js');
 });
 
 app.get('/dashboard.css', function(req, res) {
