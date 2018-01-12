@@ -392,7 +392,7 @@ getAllDomains (pool, function (res)
 {
 	getAllDomainsQuestions(pool, res, function (r_domainsAndQuestions)
 	{
-		domainsAndQuestions.questions.push(questions.questions);
+		domainsAndQuestions = r_domainsAndQuestions;
 	});
 });
 
@@ -464,7 +464,6 @@ app.get('/getDomains', function(req, res)
 			{
 				res.send (domainsAndQuestions);
 			});
-			//res.send (domains);
 		});
 	}
 });
@@ -484,7 +483,7 @@ app.get('/addQuestion/:ParentID/:DomainID/:Question/:CoeffID/:Explication?', fun
 {
 	if(res)
 	{
-		dbManager.addQuestion(pool, req.params.ParentID, req.params.DomainID, req.params.Question, req.params.Explication, req.params.CoeffID, domainsAndQuestions);
+		res.send(dbManager.addQuestion(pool, req.params.ParentID, req.params.DomainID, req.params.Question, req.params.Explication, req.params.CoeffID));
 	}
 });
 

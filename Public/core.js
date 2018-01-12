@@ -1,6 +1,6 @@
 var auditTool = angular.module("auditTool", ["ngRoute"]);
 
-
+var lastSelectedMenu;
 //import { Component } from '@angular/core';
 
 
@@ -29,7 +29,8 @@ function menuController ($scope, $http) {
 			"href":"#!managedatabase"
 		}
 	];
-	$scope.selectedMenuName = "New Audit";
+
+	//$scope.selectedMenuName = "New Audit";
 	$scope.selectMenu = function(name) {
 		$scope.selectedMenuName = name;
 		console.log(name);
@@ -143,8 +144,7 @@ function createDomainList($http, questions) {
 			templateUrl : "parameters.htm"
 		})
 		.when("/managedatabase", {
-			templateUrl : "managedatabase.htm",	
-			controller : "databaseManagerCtrl"
+			templateUrl : "managedatabase.htm"
 		})
 		.otherwise({
 			templateUrl : "newAudit.htm"
@@ -208,7 +208,6 @@ function createDomainList($http, questions) {
 			});*/
 		//});
 	});
-	app.controller("databaseManagerCtrl", function($scope, $http) { });
 
 })(auditTool);
 
