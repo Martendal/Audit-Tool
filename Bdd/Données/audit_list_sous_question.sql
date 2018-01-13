@@ -1,6 +1,6 @@
 -- MySQL dump 10.13  Distrib 5.7.17, for Win64 (x86_64)
 --
--- Host: localhost    Database: audit
+-- Host: 127.0.0.1    Database: audit
 -- ------------------------------------------------------
 -- Server version	5.7.20-log
 
@@ -23,11 +23,10 @@ DROP TABLE IF EXISTS `list_sous_question`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `list_sous_question` (
-  `idlist_sous_question` int(11) NOT NULL AUTO_INCREMENT COMMENT 'L''index dans la table',
   `idmain_question` int(11) NOT NULL COMMENT 'L''index de la question principale',
   `idsous_question` int(11) NOT NULL COMMENT 'L''index de la sous-question',
-  PRIMARY KEY (`idlist_sous_question`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8 COMMENT='Table contenant les sous-questions de chaque question';
+  PRIMARY KEY (`idmain_question`,`idsous_question`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Table contenant les sous-questions de chaque question';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -36,7 +35,7 @@ CREATE TABLE `list_sous_question` (
 
 LOCK TABLES `list_sous_question` WRITE;
 /*!40000 ALTER TABLE `list_sous_question` DISABLE KEYS */;
-INSERT INTO `list_sous_question` VALUES (1,2,3),(2,7,8),(3,7,9),(4,14,15),(5,16,17),(6,16,18),(7,16,19),(8,16,20),(9,42,43),(10,50,51),(11,58,59);
+INSERT INTO `list_sous_question` VALUES (2,3),(7,8),(7,9),(14,15),(16,17),(16,18),(16,19),(16,20),(42,43),(50,51),(58,59);
 /*!40000 ALTER TABLE `list_sous_question` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -49,4 +48,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-01-03 19:05:40
+-- Dump completed on 2018-01-13  0:30:35

@@ -487,6 +487,14 @@ app.get('/addQuestion/:ParentID/:DomainID/:Question/:CoeffID/:Explication?', fun
 	}
 });
 
+app.get('/deleteQuestion/:QuestionID/:ParentID/:NumOfChild', function (req, res)
+{
+	if(res)
+	{
+		res.send(dbManager.deleteQuestion(pool, req.params.QuestionID, req.params.ParentID, req.params.NumOfChild));
+	}
+});
+
 app.get('/', function(req, res) {
 	res.sendFile(__dirname + '/Public/index.html');
 	//res.sendFile(__dirname + '/Public/core.js');

@@ -7,11 +7,10 @@ var actualAction;    // The actual in progress action (add, edit, ...)
 /*************************************************************************************************/
 /*                                  Add a question to the database                               */
 /*                                                                                               */
-/*  @Param parentQuestion    : the id of the button that launch the function                     */
 /*  @Param parentQuestionID  : the index where the parent question is located in retrieves data  */
 /*  @Param domainID          : the index where the parent question is located in retrieves data  */
 /*************************************************************************************************/
-function addQuestion (parentQuestion, parentQuestionID, domainID)
+function addQuestion (parentQuestionID, domainID)
 {       
 	questionName = document.getElementById("Intitulé").value;
 	explication = document.getElementById("Explication").value;
@@ -25,11 +24,11 @@ function addQuestion (parentQuestion, parentQuestionID, domainID)
 /*************************************************************************************************/
 /*                       Prints the elements to add a question to the database                   */
 /*                                                                                               */
-/*  @Param parentQuestion    : the id of the button that launch the function                     */
+/*  @Param questionLauncher  : the id of the button that launch the function                     */
 /*  @Param parentQuestionID  : the index where the parent question is located in retrieves data  */
 /*  @Param domainID          : the index where the parent question is located in retrieves data  */
 /*************************************************************************************************/
-function printAddQuestionElements (parentQuestion, parentQuestionID, domainID)
+function printAddQuestionElements (questionLauncher, parentQuestionID, domainID)
 {       
 	if (actualAction != null) actualAction.container.removeChild(actualAction.div);
 	
@@ -51,7 +50,7 @@ function printAddQuestionElements (parentQuestion, parentQuestionID, domainID)
 	/* Sets the title of the action */
 	if (parentQuestionID != null)
 	{
-		tableDataContainer = document.getElementById(parentQuestion);
+		tableDataContainer = document.getElementById(questionLauncher);
 		title.appendChild(document.createTextNode("Ajout d'une sous-question"));
 		s_parentQuestionID = domainsAndQuestions.questions[domainID][parentQuestionID].idquestion;
 	}
@@ -63,9 +62,9 @@ function printAddQuestionElements (parentQuestion, parentQuestionID, domainID)
 	newElement.appendChild(title);
 	/*------------------------------*/
 
-	form.setAttribute("id", "Submit" + parentQuestion);
+	form.setAttribute("id", "Submit" + questionLauncher);
 	form.setAttribute("action", "#!/managedatabase");
-	form.setAttribute("onsubmit", "addQuestion(\"" + parentQuestion + "\"," + s_parentQuestionID + "," + s_domainID + ")");
+	form.setAttribute("onsubmit", "addQuestion(" + s_parentQuestionID + "," + s_domainID + ")");
 
 
 	/* Set the area for the question formulation */
@@ -136,7 +135,7 @@ function printAddQuestionElements (parentQuestion, parentQuestionID, domainID)
 	}
 	/*-------------------------------------------------------------------------------*/
 
-	console.log ("id: ", parentQuestion);
+	console.log ("id: ", questionLauncher);
 	console.log ("domainID: ", domainID);
 	console.log ("Array: ", domainsAndQuestions);
 	console.log ("Domaine: ", domainsAndQuestions.domains[domainID].Nom);
@@ -145,12 +144,14 @@ function printAddQuestionElements (parentQuestion, parentQuestionID, domainID)
 
 
 
-/************************************************************************************/
-/*      Create a modal alert to be sure the user wanted to delete the question    	*/
-/*                                                                                  */
-/*  @Param questionID  : the index where the question is located in retrieves data  */
-/************************************************************************************/
-function askDeleteQuestion (questionID)
+/***********************************************************************************/
+/*     Create a modal alert to be sure the user wanted to delete the question      */
+/*                                                                                 */
+/*  @Param questionID : the index where the question is located in retrieves data  */
+/*  @Param parentID   : the id of the parent question                              */
+/*  @Param numOfChild : the number of sub-question                                 */
+/***********************************************************************************/
+function askDeleteQuestion (questionID, parentID, numOfChild)
 {
 	// Get the delete modal
 	var modal = document.getElementById('deleteModal');
@@ -208,7 +209,9 @@ function askDeleteQuestion (questionID)
 
 	// Proceed to deletion
 	yesButton.onclick = function() {
-	    console.log("DELETE");
+	    $.get('/deleteQuestion/' + questionID + '/' + parentID + '/' + numOfChild);
+	    modal.removeChild(modalContent);
+    	modal.style.display = "none";
 	}
 	modalFooter.appendChild(yesButton);
 
@@ -291,14 +294,15 @@ function putQuestionInForm (domainID)
 		cell.setAttribute("class", "borderR");
 		button = document.createElement("button");
 		button.setAttribute("class", "buttonDelete");
-		button.setAttribute("onClick", "askDeleteQuestion(\"" + questionID + "\")");
+		button.setAttribute("onClick", "askDeleteQuestion(" + domainsAndQuestions.questions[domainID][i].idquestion + "," + domainsAndQuestions.questions[domainID][i].ParentID + "," + domainsAndQuestions.questions[domainID][i].NumOfChild + ")");
 		cell.appendChild (button);
 		/*-----------------------------------*/
 	}
 
+	/* Button to add a new question */
 	button = document.createElement("button");
 	button.setAttribute("class", "buttonAdd");
-	button.setAttribute("onClick", "printAddQuestionElements(\"" + null + "\"," + null + "," + domainID + ")");
+	button.setAttribute("onClick", "printAddQuestionElements(" + null + "," + null + "," + domainID + ")");
 	MainTable.appendChild (button);
 	/*--------------------------------*/
 }
