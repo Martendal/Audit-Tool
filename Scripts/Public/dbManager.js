@@ -143,6 +143,153 @@ function printAddQuestionElements (questionLauncher, parentQuestionID, domainID)
 }
 
 
+function editQuestion ()
+{
+
+}
+
+
+/*************************************************************************************************/
+/*                      Prints the elements to edit a question of the database                   */
+/*                                                                                               */
+/*  @Param questionLauncher  : the id of the button that launch the function                     */
+/*  @Param parentQuestionID  : the index where the parent question is located in retrieves data  */
+/*  @Param domainID          : the index where the parent question is located in retrieves data  */
+/*************************************************************************************************/
+function printEditQuestionElements (questionLauncher, questionID, domainID)
+{       
+	if (actualAction != null) actualAction.container.removeChild(actualAction.div);
+	
+	var tableDataContainer = document.getElementById(questionLauncher);	 // The row that launched the function
+	var newElement = document.createElement("div");						 // The new div element that will contain all the form elements
+	var title = document.createElement("h3");							 // The title of the action
+	var form = document.createElement("form");							 // The form to fulfill
+	var textArea = document.createElement("input");						 // The text area to fulfill
+	var selectArea = document.createElement ("select");					 // The selection area	
+	var selectOption = document.createElement ("option");				 // The options of the selection area
+	var fieldName = document.createElement ("div");						 // The name of each field
+	var submit  = document.createElement("input");						 // The submit button to confirm the modification
+
+	/* Sets the title of the action */
+	title.appendChild(document.createTextNode("Modification d'une question"));
+	newElement.appendChild(title);
+	/*------------------------------*/
+
+	form.setAttribute("id", "Submit" + questionLauncher);
+	form.setAttribute("action", "#!/managedatabase");
+	form.setAttribute("onsubmit", "editQuestion()");
+
+	/* Set the area for the parent question */
+	fieldName = document.createElement ("div");
+	fieldName.appendChild(document.createTextNode("Question parente"));
+	fieldName.setAttribute ("style", "font-weight: bold;")
+	form.appendChild(fieldName);
+	// None option
+	selectArea.setAttribute("id", "ParentID");
+	selectOption = document.createElement("option");
+	selectOption.setAttribute("value", "0");
+	selectOption.appendChild(document.createTextNode("Aucune"));
+	selectArea.appendChild(selectOption);
+	// Graphical option
+	selectOption = document.createElement("option");
+	selectOption.setAttribute("disabled", "disabled");
+	selectOption.appendChild(document.createTextNode("──────────"));
+	selectArea.appendChild(selectOption);
+	// All the others available questions (except the sub-question owned by the question)
+	for (var i = 0; i < domainsAndQuestions.questions[domainID].length; i++) 
+	{
+		selectOption = document.createElement("option");
+		selectOption.setAttribute("value", domainsAndQuestions.questions[domainID][i].idquestion);
+		if (domainsAndQuestions.questions[domainID][questionID].ParentID == domainsAndQuestions.questions[domainID][i].idquestion) selectOption.setAttribute("selected", "selected");
+		selectOption.appendChild(document.createTextNode(domainsAndQuestions.questions[domainID][i].idquestion + ". " + domainsAndQuestions.questions[domainID][i].Question));
+		selectArea.appendChild(selectOption);
+	}
+
+	form.appendChild(selectArea);
+	/*----------------------------------*/
+
+	/* Set the area for the question formulation */
+	fieldName.appendChild(document.createTextNode("Question"));
+	fieldName.setAttribute ("style", "font-weight: bold;")
+	form.appendChild(fieldName);
+	textArea.setAttribute("id", "Intitulé");
+	textArea.setAttribute("type", "text");
+	textArea.setAttribute("class", "areaField");
+	textArea.setAttribute("placeholder", "Intitulé de la question");
+	textArea.setAttribute("value", document.getElementById(questionLauncher).innerHTML);
+
+	textArea.setAttribute("required", true);
+	form.appendChild(textArea);
+	/*-------------------------------------------*/
+
+	/* Set the area for the explication */
+	fieldName = document.createElement ("div");
+	fieldName.setAttribute ("style", "font-weight: bold;")
+	fieldName.appendChild(document.createTextNode("Explication"));
+	form.appendChild(fieldName);
+	textArea = document.createElement("input");
+	textArea.setAttribute("id", "Explication");
+	textArea.setAttribute("type", "text");
+	textArea.setAttribute("class", "areaField");
+	textArea.setAttribute("placeholder", "Explication de la question");
+	textArea.setAttribute("value", domainsAndQuestions.questions[domainID][questionID].Explication);
+	form.appendChild(textArea);
+	/*----------------------------------*/
+	
+	/* Set the area for the coefficient */
+	fieldName = document.createElement ("div");
+	fieldName.appendChild(document.createTextNode("Coefficient"));
+	fieldName.setAttribute ("style", "font-weight: bold;")
+	form.appendChild(fieldName);
+	selectArea = document.createElement ("select");
+	selectArea.setAttribute("id", "Coefficient");
+	for (var i = 0; i < coefficients.length; i++) 
+	{
+		selectOption = document.createElement("option");
+		selectOption.setAttribute("value", coefficients[i].idcoefficient);
+		if (domainsAndQuestions.questions[domainID][questionID].CoeffID == i) selectOption.setAttribute("selected", "selected");
+		selectOption.appendChild(document.createTextNode(coefficients[i].Valeur));
+		selectArea.appendChild(selectOption);
+	}
+
+	form.appendChild(selectArea);
+	/*----------------------------------*/
+
+	submit.setAttribute("type", "submit");
+	form.appendChild(submit);
+
+	newElement.appendChild(form);
+
+	/* Sets the actual action element regarding if there is a parent question or not */
+	if (tableDataContainer != null) 
+	{
+		tableDataContainer.appendChild(newElement);
+
+		actualAction = { 
+			container: tableDataContainer,
+			div: newElement
+		};
+	}
+	else
+	{
+		MainTable.appendChild(newElement);
+
+		actualAction = { 
+			container: MainTable,
+			div: newElement
+		};
+	}
+	/*-------------------------------------------------------------------------------*/
+
+	console.log ("id: ", questionLauncher);
+	console.log ("domainID: ", domainID);
+	console.log ("Array: ", domainsAndQuestions);
+	console.log ("Domaine: ", domainsAndQuestions.domains[domainID].Nom);
+	if (questionID != null) console.log ("Question: ", domainsAndQuestions.questions[domainID][questionID].Question);
+}
+
+
+
 
 /***********************************************************************************/
 /*     Create a modal alert to be sure the user wanted to delete the question      */
@@ -285,7 +432,7 @@ function putQuestionInForm (domainID)
 		button = document.createElement("button");
 		cell.setAttribute("class", "borderC");
 		button.setAttribute("class", "buttonEdit");
-		button.setAttribute("onClick", "printAddQuestionElements(\"" + questionID + "\"," + i + "," + domainID + ")");
+		button.setAttribute("onClick", "printEditQuestionElements(\"" + questionID + "\"," + i + "," + domainID + ")");
 		cell.appendChild (button);
 		/*---------------------------------*/
 

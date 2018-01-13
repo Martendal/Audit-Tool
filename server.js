@@ -495,6 +495,15 @@ app.get('/deleteQuestion/:QuestionID/:ParentID/:NumOfChild', function (req, res)
 	}
 });
 
+app.get('/editQuestion/:modification', function (req, res)
+{
+	if(res)
+	{
+		res.send(dbManager.editQuestion(pool, req.params.modification.QuestionID, req.params.modification.Question, req.params.modification.Explication, req.params.modification.Numero, req.params.modification.ParentID,
+			                            req.params.modification.NumOfChild, req.params.modification.DomainID, req.params.modification.CoeffID));
+	}
+});
+
 app.get('/', function(req, res) {
 	res.sendFile(__dirname + '/Public/index.html');
 	//res.sendFile(__dirname + '/Public/core.js');

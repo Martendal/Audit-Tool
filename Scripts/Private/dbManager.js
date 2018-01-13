@@ -109,15 +109,15 @@ dbManager.prototype.addQuestion = function (pool, p_ParentID, p_DomainID, p_Ques
 /*  Delete recursively all sub-question of the given parent (it also delete the parent)  */
 /*                                                                                       */
 /*  @Param pool         : the database                                                   */
-/*  @Param p_QuestionID : the id of the question                                         */
 /*  @Param p_ParentID   : the id of the parent question                                  */
-/*  @Param p_NumOfChild : the number of sub-question                                     */
 /*****************************************************************************************/
 function deleteParentQuestionAndAllSubQuestion (pool, p_ParentID)
 {
     try{
-        pool.getConnection(function(err, connection) {
-            if(err) {
+        pool.getConnection(function(err, connection)
+        {
+            if(err)
+            {
                 throw err;
             }
             else 
@@ -126,7 +126,8 @@ function deleteParentQuestionAndAllSubQuestion (pool, p_ParentID)
 
                 // Select all the child of the parent question
                 connection.query("SELECT idquestion, NumOfChild FROM question WHERE ParentID = " + mysql.escape(p_ParentID)
-                               , function(err, res) {
+                , function(err, res)
+                {
                     if(err) throw err;
                     for (var i = 0; i < res.length; i++)
                     {
@@ -138,48 +139,53 @@ function deleteParentQuestionAndAllSubQuestion (pool, p_ParentID)
 
                         // Delete the sub-question from the question table
                         connection.query("DELETE FROM question WHERE idquestion = " + mysql.escape(res[i].idquestion)
-                               , function(err, res) {
-                                if(err) throw err;
-                                else console.log("OK DELETE SUB-QUESTION TABLE");
+                        , function(err, res)
+                        {
+                            if(err) throw err;
+                            else console.log("OK DELETE SUB-QUESTION TABLE");
                         });
 
                         // Delete the sub-question from all the package
                         connection.query("DELETE FROM package_question_list WHERE QuestionID = " + mysql.escape(res[i].idquestion)
-                               , function(err, res) {
-                                if(err) throw err;
-                                else console.log("OK DELETE SUB-QUESTION PACKAGE");
+                        , function(err, res)
+                        {
+                            if(err) throw err;
+                            else console.log("OK DELETE SUB-QUESTION PACKAGE");
                         });
 
                         // Delete the sub-question from list_sous_question table
                         connection.query("DELETE FROM list_sous_question WHERE idmain_question = " + mysql.escape(res[i].idquestion) + " OR idsous_question = " + mysql.escape(res[i].idquestion)
-                               , function(err, res) {
-                                if(err) throw err;
-                                else console.log("OK DELETE SUB-QUESTION LIST SOUS QUESTION");
+                        , function(err, res)
+                        {
+                            if(err) throw err;
+                            else console.log("OK DELETE SUB-QUESTION LIST SOUS QUESTION");
                         });
                     }
                 });
 
                 // Delete the question from the question table
                 connection.query("DELETE FROM question WHERE idquestion = " + mysql.escape(p_ParentID)
-                       , function(err, res) {
-                        if(err) throw err;
-                        else console.log("OK DELETE QUESTION TABLE");
+                , function(err, res)
+                {
+                    if(err) throw err;
+                    else console.log("OK DELETE QUESTION TABLE");
                 });
 
                 // Delete the question from all the package
                 connection.query("DELETE FROM package_question_list WHERE QuestionID = " + mysql.escape(p_ParentID)
-                       , function(err, res) {
-                        if(err) throw err;
-                        else console.log("OK DELETE QUESTION PACKAGE");
+                , function(err, res)
+                {
+                    if(err) throw err;
+                    else console.log("OK DELETE QUESTION PACKAGE");
                 });
 
                 // Delete the question from list_sous_question table
                 connection.query("DELETE FROM list_sous_question WHERE idmain_question = " + mysql.escape(p_ParentID) + " OR idsous_question = " + mysql.escape(p_ParentID)
-                       , function(err, res) {
-                        if(err) throw err;
-                        else console.log("OK DELETE QUESTION LIST SOUS QUESTION");
+                , function(err, res)
+                {
+                    if(err) throw err;
+                    else console.log("OK DELETE QUESTION LIST SOUS QUESTION");
                 });
-
             }
             connection.release();
             console.log("END DELETE SUB-QUESTION");
@@ -211,8 +217,10 @@ dbManager.prototype.deleteQuestion = function (pool, p_QuestionID, p_ParentID, p
     if (p_QuestionID == 0 || p_QuestionID == null) return "Impossible de supprimer une question ayant un ID null ou égal à 0";
 
     try{
-        pool.getConnection(function(err, connection) {
-            if(err) {
+        pool.getConnection(function(err, connection)
+        {
+            if(err)
+            {
                 throw err;
             }
             else 
@@ -220,21 +228,23 @@ dbManager.prototype.deleteQuestion = function (pool, p_QuestionID, p_ParentID, p
                 // If the question has some sub-questions we need to delete it too
                 if (p_NumOfChild > 0)
                 {
-                    deleteParentQuestionAndAllSubQuestion (pool, p_QuestionID)
+                    deleteParentQuestionAndAllSubQuestion (pool, p_QuestionID);
                 }
                 else
                 { // As the above funtion delete the actual question we need to do it here if the question has no sub-question
                     connection.query("DELETE FROM question WHERE idquestion = " + mysql.escape(p_QuestionID)
-                                           , function(err, res) {
-                                if(err) throw err;
-                                else console.log("OK DELETE QUESTION TABLE");
+                    , function(err, res)
+                    {
+                        if(err) throw err;
+                        else console.log("OK DELETE QUESTION TABLE");
                     });
 
                     // Delete the question from all the package
                     connection.query("DELETE FROM package_question_list WHERE QuestionID = " + mysql.escape(p_QuestionID)
-                           , function(err, res) {
-                            if(err) throw err;
-                            else console.log("OK DELETE QUESTION PACKAGE");
+                    , function(err, res)
+                    {
+                        if(err) throw err;
+                        else console.log("OK DELETE QUESTION PACKAGE");
                     });
                 }
 
@@ -243,24 +253,272 @@ dbManager.prototype.deleteQuestion = function (pool, p_QuestionID, p_ParentID, p
                 {
                     // Update the number of child that the parent question has
                     connection.query("UPDATE question SET NumOfChild = NumOfChild - 1 WHERE idquestion = " + mysql.escape(p_ParentID)
-                           , function(err, res) {
-                            if(err) throw err;
-                            else console.log("OK UPDATE DELETE");
+                    , function(err, res)
+                    {
+                        if(err) throw err;
+                        else console.log("OK UPDATE DELETE");
                     });
 
                     if (p_NumOfChild == 0)
                     {
                         // Delete the question from list_sous_question table
                         connection.query("DELETE FROM list_sous_question WHERE idsous_question = " + mysql.escape(p_QuestionID)
-                               , function(err, res) {
-                                if(err) throw err;
-                                else console.log("OK DELETE QUESTION LIST SOUS QUESTION");
+                        , function(err, res)
+                        {
+                            if(err) throw err;
+                            else console.log("OK DELETE QUESTION LIST SOUS QUESTION");
                         });
                     }
                 }
                 
                 connection.release();
                 console.log("END DELETE QUESTION");
+            }
+        });
+    }
+    catch(e) {
+        console.log(e);
+    }
+}
+
+
+
+
+
+/*****************************************************************************************/
+/*  Update recursively all sub-question of the given parent (it also update the parent)  */
+/*                                                                                       */
+/*  @Param pool         : the database                                                   */
+/*  @Param p_ParentID   : the id of the parent question                                  */
+/*  @Param p_DomainID    : the id of the domain                                          */
+/*****************************************************************************************/
+function editParentQuestionAndAllSubQuestion (pool, p_ParentID, p_DomainID)
+{
+    try{
+        pool.getConnection(function(err, connection)
+        {
+            if(err)
+            {
+                throw err;
+            }
+            else 
+            {
+                console.log("BEGIN UPDATE SUB-QUESTION");
+
+                // Select all the child of the parent question
+                connection.query("SELECT idquestion, NumOfChild FROM question WHERE ParentID = " + mysql.escape(p_ParentID)
+                , function(err, res)
+                {
+                    if(err) throw err;
+                    for (var i = 0; i < res.length; i++)
+                    {
+                        // Check if the child has some sub-question
+                        if (res[i].NumOfChild > 0)
+                        {
+                            editParentQuestionAndAllSubQuestion(pool, res[i].idquestion, p_DomainID);
+                        }
+
+                        // Update the sub-question of the question table
+                        connection.query("UPDATE question SET DomaineID = " +  mysql.escape(p_DomainID) + " WHERE idquestion = " + mysql.escape(res[i].idquestion)
+                        , function(err, res)
+                        {
+                            if(err) throw err;
+                            else console.log("OK UPDATE SUB-QUESTION TABLE");
+                        });
+
+                        // Update the sub-question from all the package
+                        connection.query("UPDATE package_question_list SET DomaineID = " +  mysql.escape(p_DomainID) + " WHERE QuestionID = " + mysql.escape(res[i].idquestion)
+                        , function(err, res)
+                        {
+                            if(err) throw err;
+                            else console.log("OK UPDATE SUB-QUESTION PACKAGE");
+                        });
+                    }
+                });
+
+                // Update the question of the question table
+                connection.query("UPDATE question SET DomaineID = " +  mysql.escape(p_DomainID) + " WHERE idquestion = " + mysql.escape(p_ParentID)
+                , function(err, res)
+                {
+                    if(err) throw err;
+                    else console.log("OK UPDATE QUESTION TABLE");
+                });
+
+                // Update the question from all the package
+                connection.query("UPDATE package_question_list SET DomaineID = " +  mysql.escape(p_DomainID) + " WHERE QuestionID = " + mysql.escape(p_ParentID)
+                , function(err, res)
+                {
+                    if(err) throw err;
+                    else console.log("OK UPDATE QUESTION PACKAGE");
+                });
+            }
+            connection.release();
+            console.log("END UPDATE SUB-QUESTION");
+        });
+    }
+    catch(e) {
+        console.log(e);
+    }
+}
+
+
+/************************************************************/
+/*          Update a question of the database               */
+/*                                                          */
+/*  @Param pool          : the database                     */
+/*  @Param p_QuestionID  : the id of the question           */
+/*  @Param p_Question    : the text of the question         */
+/*  @Param p_Explication : the explanation of the question  */
+/*  @Param p_Numero      : the place of the question        */
+/*  @Param p_ParentID    : the id of the parent question    */
+/*  @Param p_NumOfChild  : the number of sub-question       */
+/*  @Param p_DomainID    : the id of the domain             */
+/*  @Param p_CoeffID     : the id of the coefficient        */
+/************************************************************/
+dbManager.prototype.editQuestion = function (pool, p_QuestionID, p_Question, p_Explication, p_Numero, p_ParentID, p_NumOfChild, p_DomainID, p_CoeffID)
+{
+    console.log("BEGIN UPDATE QUESTION");
+ 
+    console.log ("QuestionID: ", p_QuestionID);
+    console.log ("Question: ", p_QuestionID);
+    console.log ("Explication: ", p_Explication);
+    console.log ("Numero: ", p_Numero);
+    console.log ("ParentID: ", p_ParentID);
+    console.log ("NumOfChild: ", p_NumOfChild);
+    console.log ("ParentID: ", p_ParentID);
+    console.log ("DomainID: ", p_DomainID);
+    console.log ("CoeffID: ", p_CoeffID);
+
+    if (p_QuestionID == 0 || p_QuestionID == null) return console.log("Impossible d'éditer une question ayant un ID null ou égal à 0");
+    if (p_Question == null || p_Question == "") return console.log("Erreur: une question ne peut pas avoir un intitulé vide");
+    if (p_ParentID == null) p_ParentID = 0;
+    if (p_NumOfChild == null) p_NumOfChild = 0;
+    if (p_CoeffID == null || CoeffID == 0) p_CoeffID = 1;
+    if (p_DomainID == null) p_DomainID = 0;
+
+    try{
+        pool.getConnection(function(err, connection)
+        {
+            if(err) {
+                throw err;
+            }
+            else 
+            {
+                // We first need to retrieve some actuals states of the question
+                connection.query("SELECT ParentID, DomaineID FROM question WHERE idquestion = " + mysql.escape(p_QuestionID)
+                , function(err, res)
+                {
+                    if(err) throw err;
+                    else console.log("OK SELECT EDIT QUESTION TABLE");
+
+                    if(res.ParentID != p_ParentID)
+                    {   // The parent has changed
+
+                        if (p_ParentID != 0)
+                        {   // The new parent exist
+                            // Update the number of child that the new parent question has
+                            connection.query("UPDATE question SET NumOfChild = NumOfChild + 1 WHERE idquestion = " + mysql.escape(p_ParentID)
+                            , function(err, res) 
+                            {
+                                if(err) throw err;
+                                else console.log("OK UPDATE EDIT NEW PARENT");
+                            });
+
+                            if (res.ParentID == 0)
+                            {   // The question hadn't get a parent before so we have to create a new line
+                                connection.query("INSERT INTO list_sous_question (idmain_question, idsous_question) " +
+                                                 "VALUE (" + mysql.escape(p_ParentID) + "," + mysql.escape(p_QuestionID) + ") " +
+                                                 "ON DUPLICATE KEY UPDATE idmain_question = idmain_question"
+                                , function(err, res)
+                                {
+                                    if(err) throw err;
+                                    else console.log("OK INSERT EDIT LIST SOUS QUESTION");
+                                });
+                            }
+                            else
+                            {   // The question had a parent so we just need to edit the line
+
+                                // Update the question in the list_sous_question table
+                                connection.query("UPDATE list_sous_question SET idmain_question = " + mysql.escape(p_ParentID) + " WHERE idsous_question = " + mysql.escape(p_QuestionID)
+                                , function(err, res) 
+                                {
+                                    if(err) throw err;
+                                    else console.log("OK UPDATE EDIT LIST SOUS QUESTION");
+                                });
+
+                                // Update the number of child that the old parent question has
+                                connection.query("UPDATE question SET NumOfChild = NumOfChild - 1 WHERE idquestion = " + mysql.escape(res.ParentID)
+                                , function(err, res)
+                                {
+                                    if(err) throw err;
+                                    else console.log("OK UPDATE EDIT OLD PARENT");
+                                });
+                            }
+                        }
+                        else
+                        {   // There's no new parent
+                            // Update the question in the list_sous_question table
+                            connection.query("DELETE FROM list_sous_question WHERE idmain_question = " + mysql.escape(res.ParentID) + " WHERE idsous_question = " + mysql.escape(p_QuestionID)
+                            , function(err, res) 
+                            {
+                                if(err) throw err;
+                                else console.log("OK UPDATE EDIT LIST SOUS QUESTION");
+                            });
+
+                            // Update the number of child that the old parent question has
+                            connection.query("UPDATE question SET NumOfChild = NumOfChild - 1 WHERE idquestion = " + mysql.escape(res.ParentID)
+                            , function(err, res)
+                            {
+                                if(err) throw err;
+                                else console.log("OK UPDATE EDIT OLD PARENT");
+                            });
+                        }  
+                    }
+
+                    if(res.DomainID != p_DomainID)
+                    {   // The domain has changed
+
+                        // If the question has some sub-questions we need to delete it too
+                        if (p_NumOfChild > 0)
+                        {
+                            editParentQuestionAndAllSubQuestion (pool, p_QuestionID, p_DomainID);
+                        }
+                        else
+                        { // As the above funtion delete the actual question we need to do it here if the question has no sub-question
+                            // Update the question of the question table
+                            connection.query("UPDATE question SET DomaineID = " +  mysql.escape(p_DomainID) + " WHERE idquestion = " + mysql.escape(p_QuestionID)
+                            , function(err, res)
+                            {
+                                if(err) throw err;
+                                else console.log("OK UPDATE QUESTION TABLE");
+                            });
+
+                            // Update the question from all the package
+                            connection.query("UPDATE package_question_list SET DomaineID = " +  mysql.escape(p_DomainID) + " WHERE QuestionID = " + mysql.escape(p_QuestionID)
+                            , function(err, res)
+                            {
+                                if(err) throw err;
+                                else console.log("OK UPDATE QUESTION PACKAGE");
+                            });
+                        }
+                    }
+
+                    // Finnaly, update the question in the question table
+                    connection.query("UPDATE question SET Question = " + mysql.escape(p_Question) + ", " +
+                                                          "Explication = " + mysql.escape(p_Explication) + ", " +
+                                                          "Numero = " + mysql.escape(p_Numero) + ", " +
+                                                          "ParentID = " + mysql.escape(p_ParentID) + ", " +
+                                                          "DomaineID = " + mysql.escape(p_DomainID) + ", " +
+                                                          "CoeffID = " + mysql.escape(p_CoeffID) + 
+                                     " WHERE QuestionID = " + mysql.escape(p_QuestionID)
+                    , function(err, res)
+                    {
+                        if(err) throw err;
+                        else console.log("OK UPDATE QUESTION TABLE");
+                    });
+                });
+                connection.release();
+                console.log("END EDIT QUESTION");
             }
         });
     }
