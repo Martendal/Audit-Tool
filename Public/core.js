@@ -12,7 +12,7 @@ function menuController ($scope, $http) {
 			"menuName":"New Audit",
 			"href":"#!newaudit"
 		},
-		{
+		/*{
 			"menuName":"Saved Audits",
 			"href":"#!savedaudit"
 		},
@@ -23,9 +23,9 @@ function menuController ($scope, $http) {
 		{
 			"menuName":"Parameters",
 			"href":"#!parameters"
-		},
+		},*/
 		{
-			"menuName":"Manage Database",
+			"menuName":"Manage Questions",
 			"href":"#!managedatabase"
 		}
 	];

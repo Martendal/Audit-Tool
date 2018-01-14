@@ -545,7 +545,29 @@ app.get('/node_modules/chart.js/dist/Chart.js', function(req, res) {
 	res.sendFile(__dirname + '/node_modules/chart.js/dist/Chart.js');
 });
 
+app.get('/jquery-3.2.1.min.js', function(req, res) {
+	res.sendFile(__dirname + '/Public/jquery-3.2.1.min.js');
+});
 
+app.get('/angular.min.js', function(req, res) {
+	res.sendFile(__dirname + '/Public/angular.min.js');
+});
+
+app.get('/angular-route.js', function(req, res) {
+	res.sendFile(__dirname + '/Public/angular-route.js');
+});
+
+app.get('/survey-jquery/survey.jquery.js', function(req, res) {
+	res.sendFile(__dirname + '/Public/survey-jquery/survey.jquery.js');
+});
+
+app.get('/bootstrap.min.css', function(req, res) {
+	res.sendFile(__dirname + '/Public/bootstrap.min.css');
+});
+
+app.get('/tether.min.js', function(req, res) {
+	res.sendFile(__dirname + '/Public/tether.min.js');
+});
 
 app.listen(8080);
 console.log("App listening on port 8080.");
