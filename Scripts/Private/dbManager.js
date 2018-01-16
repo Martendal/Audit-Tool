@@ -392,8 +392,9 @@ dbManager.prototype.editQuestion = function (pool, p_QuestionID, p_Question, p_E
     if (p_QuestionID == 0 || p_QuestionID == null) return console.log("Impossible d'éditer une question ayant un ID null ou égal à 0");
     if (p_Question == null || p_Question == "") return console.log("Erreur: une question ne peut pas avoir un intitulé vide");
     if (p_ParentID == null) p_ParentID = 0;
+    if (p_Numero == null) p_Numero = 0;
     if (p_NumOfChild == null) p_NumOfChild = 0;
-    if (p_CoeffID == null || CoeffID == 0) p_CoeffID = 1;
+    if (p_CoeffID == null || p_CoeffID == 0) p_CoeffID = 1;
     if (p_DomainID == null) p_DomainID = 0;
 
     try{
@@ -411,7 +412,7 @@ dbManager.prototype.editQuestion = function (pool, p_QuestionID, p_Question, p_E
                     if(err) throw err;
                     else console.log("OK SELECT EDIT QUESTION TABLE");
 
-                    if(res.ParentID != p_ParentID)
+                    if(res[0].ParentID != p_ParentID)
                     {   // The parent has changed
 
                         if (p_ParentID != 0)
@@ -424,7 +425,7 @@ dbManager.prototype.editQuestion = function (pool, p_QuestionID, p_Question, p_E
                                 else console.log("OK UPDATE EDIT NEW PARENT");
                             });
 
-                            if (res.ParentID == 0)
+                            if (res[0].ParentID == 0)
                             {   // The question hadn't get a parent before so we have to create a new line
                                 connection.query("INSERT INTO list_sous_question (idmain_question, idsous_question) " +
                                                  "VALUE (" + mysql.escape(p_ParentID) + "," + mysql.escape(p_QuestionID) + ") " +
@@ -447,7 +448,7 @@ dbManager.prototype.editQuestion = function (pool, p_QuestionID, p_Question, p_E
                                 });
 
                                 // Update the number of child that the old parent question has
-                                connection.query("UPDATE question SET NumOfChild = NumOfChild - 1 WHERE idquestion = " + mysql.escape(res.ParentID)
+                                connection.query("UPDATE question SET NumOfChild = NumOfChild - 1 WHERE idquestion = " + mysql.escape(res[0].ParentID)
                                 , function(err, res)
                                 {
                                     if(err) throw err;
@@ -458,15 +459,15 @@ dbManager.prototype.editQuestion = function (pool, p_QuestionID, p_Question, p_E
                         else
                         {   // There's no new parent
                             // Update the question in the list_sous_question table
-                            connection.query("DELETE FROM list_sous_question WHERE idmain_question = " + mysql.escape(res.ParentID) + " WHERE idsous_question = " + mysql.escape(p_QuestionID)
+                            connection.query("DELETE FROM list_sous_question WHERE idmain_question = " + mysql.escape(res[0].ParentID) + " AND idsous_question = " + mysql.escape(p_QuestionID)
                             , function(err, res) 
                             {
                                 if(err) throw err;
-                                else console.log("OK UPDATE EDIT LIST SOUS QUESTION");
+                                else console.log("OK DELETE EDIT LIST SOUS QUESTION");
                             });
 
                             // Update the number of child that the old parent question has
-                            connection.query("UPDATE question SET NumOfChild = NumOfChild - 1 WHERE idquestion = " + mysql.escape(res.ParentID)
+                            connection.query("UPDATE question SET NumOfChild = NumOfChild - 1 WHERE idquestion = " + mysql.escape(res[0].ParentID)
                             , function(err, res)
                             {
                                 if(err) throw err;
@@ -475,7 +476,7 @@ dbManager.prototype.editQuestion = function (pool, p_QuestionID, p_Question, p_E
                         }  
                     }
 
-                    if(res.DomainID != p_DomainID)
+                    if(res[0].DomaineID != p_DomainID)
                     {   // The domain has changed
 
                         // If the question has some sub-questions we need to delete it too
@@ -510,7 +511,7 @@ dbManager.prototype.editQuestion = function (pool, p_QuestionID, p_Question, p_E
                                                           "ParentID = " + mysql.escape(p_ParentID) + ", " +
                                                           "DomaineID = " + mysql.escape(p_DomainID) + ", " +
                                                           "CoeffID = " + mysql.escape(p_CoeffID) + 
-                                     " WHERE QuestionID = " + mysql.escape(p_QuestionID)
+                                     " WHERE idquestion = " + mysql.escape(p_QuestionID)
                     , function(err, res)
                     {
                         if(err) throw err;

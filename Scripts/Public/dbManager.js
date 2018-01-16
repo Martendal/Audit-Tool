@@ -143,9 +143,61 @@ function printAddQuestionElements (questionLauncher, parentQuestionID, domainID)
 }
 
 
-function editQuestion ()
+
+/******************************************************************************************/
+/*                          Edit the question of the database                             */
+/*                                                                                        */
+/*  @Param questionID : the index where the parent question is located in retrieves data  */
+/*  @Param numOfChild : the number of sub-questions the question has                      */
+/******************************************************************************************/
+function editQuestion (questionID, numOfChild)
 {
 
+    $.get('/editQuestion/' + questionID + '/' + document.getElementById("Intitulé").value + '/' + document.getElementById("Numéro").value + '/' + domainsAndQuestions.domains[document.getElementById("DomainID").value].iddomaine + '/' + document.getElementById("ParentID").value + '/'
+                           + numOfChild + '/'  + document.getElementById("Coefficient").value + '/' + document.getElementById("Explication").value);
+}
+
+
+/******************************************************************************************/
+/*  Update the select parentID question in order to propose those of the selected domain  */
+/*                                                                                        */
+/*  @Param questionID : the index where the parent question is located in retrieves data  */
+/*  @Param domainID   : the index where the parent question is located in retrieves data  */
+/******************************************************************************************/
+function updateSelectQuestion (questionID, domainID)
+{
+    var selectParentID = document.getElementById ("ParentID");
+    var selectedDomainID = document.getElementById ("DomainID").selectedIndex;
+
+    console.log("selectedDomainID: ", selectedDomainID);
+
+    while (selectParentID.hasChildNodes())
+    {
+        selectParentID.removeChild(selectParentID.lastChild);
+    }
+
+    // None option
+    var selectOption = document.createElement("option");
+    selectOption.setAttribute("value", "0");
+    selectOption.appendChild(document.createTextNode("Aucune"));
+    selectParentID.appendChild(selectOption);
+    // Graphical option
+    selectOption = document.createElement("option");
+    selectOption.setAttribute("disabled", "disabled");
+    selectOption.appendChild(document.createTextNode("──────────"));
+    selectParentID.appendChild(selectOption);
+    // All the others available questions (except the sub-question owned by the question)
+    for (var i = 0; i < domainsAndQuestions.questions[selectedDomainID].length; i++)
+    {
+        if (domainsAndQuestions.questions[domainID][i].idquestion != domainsAndQuestions.questions[domainID][questionID].idquestion && domainsAndQuestions.questions[domainID][i].ParentID != domainsAndQuestions.questions[domainID][questionID].idquestion)
+        {
+            selectOption = document.createElement("option");
+            selectOption.setAttribute("value", domainsAndQuestions.questions[domainID][i].idquestion);
+            if (domainsAndQuestions.questions[domainID][questionID].ParentID == domainsAndQuestions.questions[domainID][i].idquestion) selectOption.setAttribute("selected", "selected");
+            selectOption.appendChild(document.createTextNode(domainsAndQuestions.questions[domainID][i].idquestion + ". " + domainsAndQuestions.questions[domainID][i].Question));
+            selectArea.appendChild(selectOption);
+        }
+    }
 }
 
 
@@ -177,7 +229,28 @@ function printEditQuestionElements (questionLauncher, questionID, domainID)
 
 	form.setAttribute("id", "Submit" + questionLauncher);
 	form.setAttribute("action", "#!/managedatabase");
-	form.setAttribute("onsubmit", "editQuestion()");
+	form.setAttribute("onsubmit", "editQuestion(" + domainsAndQuestions.questions[domainID][questionID].idquestion + ", " + domainsAndQuestions.questions[domainID][questionID].NumOfChild + ")");
+
+    /* Set the area for the domain */
+    fieldName = document.createElement ("div");
+    fieldName.appendChild(document.createTextNode("Domaine"));
+    fieldName.setAttribute ("style", "font-weight: bold;")
+    form.appendChild(fieldName);
+    // None option
+    selectArea.setAttribute("id", "DomainID");
+    selectArea.setAttribute("onchange", "updateSelectQuestion(" + questionID + ", " + domainID + ")");
+    // All the others available questions
+    for (var i = 0; i < domainsAndQuestions.domains.length; i++) 
+    {
+        selectOption = document.createElement("option");
+        selectOption.setAttribute("value", i);
+        if (domainsAndQuestions.domains[i].iddomaine == domainsAndQuestions.domains[domainID].iddomaine) selectOption.setAttribute("selected", "selected");
+        selectOption.appendChild(document.createTextNode(domainsAndQuestions.domains[i].iddomaine + ". " + domainsAndQuestions.domains[i].Nom));
+        selectArea.appendChild(selectOption);
+    }
+
+    form.appendChild(selectArea);
+    /*----------------------------------*/
 
 	/* Set the area for the parent question */
 	fieldName = document.createElement ("div");
@@ -185,6 +258,7 @@ function printEditQuestionElements (questionLauncher, questionID, domainID)
 	fieldName.setAttribute ("style", "font-weight: bold;")
 	form.appendChild(fieldName);
 	// None option
+    selectArea = document.createElement ("select");
 	selectArea.setAttribute("id", "ParentID");
 	selectOption = document.createElement("option");
 	selectOption.setAttribute("value", "0");
@@ -198,17 +272,21 @@ function printEditQuestionElements (questionLauncher, questionID, domainID)
 	// All the others available questions (except the sub-question owned by the question)
 	for (var i = 0; i < domainsAndQuestions.questions[domainID].length; i++) 
 	{
-		selectOption = document.createElement("option");
-		selectOption.setAttribute("value", domainsAndQuestions.questions[domainID][i].idquestion);
-		if (domainsAndQuestions.questions[domainID][questionID].ParentID == domainsAndQuestions.questions[domainID][i].idquestion) selectOption.setAttribute("selected", "selected");
-		selectOption.appendChild(document.createTextNode(domainsAndQuestions.questions[domainID][i].idquestion + ". " + domainsAndQuestions.questions[domainID][i].Question));
-		selectArea.appendChild(selectOption);
+        if (domainsAndQuestions.questions[domainID][i].idquestion != domainsAndQuestions.questions[domainID][questionID].idquestion && domainsAndQuestions.questions[domainID][i].ParentID != domainsAndQuestions.questions[domainID][questionID].idquestion)
+        {
+		    selectOption = document.createElement("option");
+		    selectOption.setAttribute("value", domainsAndQuestions.questions[domainID][i].idquestion);
+		    if (domainsAndQuestions.questions[domainID][questionID].ParentID == domainsAndQuestions.questions[domainID][i].idquestion) selectOption.setAttribute("selected", "selected");
+		    selectOption.appendChild(document.createTextNode(domainsAndQuestions.questions[domainID][i].idquestion + ". " + domainsAndQuestions.questions[domainID][i].Question));
+		    selectArea.appendChild(selectOption);
+        }
 	}
 
 	form.appendChild(selectArea);
 	/*----------------------------------*/
 
 	/* Set the area for the question formulation */
+    fieldName = document.createElement ("div");
 	fieldName.appendChild(document.createTextNode("Question"));
 	fieldName.setAttribute ("style", "font-weight: bold;")
 	form.appendChild(fieldName);
@@ -232,9 +310,24 @@ function printEditQuestionElements (questionLauncher, questionID, domainID)
 	textArea.setAttribute("type", "text");
 	textArea.setAttribute("class", "areaField");
 	textArea.setAttribute("placeholder", "Explication de la question");
-	textArea.setAttribute("value", domainsAndQuestions.questions[domainID][questionID].Explication);
+	textArea.setAttribute("value", domainsAndQuestions.questions[domainID][questionID].Explication == null ? "" : domainsAndQuestions.questions[domainID][questionID].Explication);
 	form.appendChild(textArea);
 	/*----------------------------------*/
+
+    /* Set the area for the apparition number */
+    fieldName = document.createElement ("div");
+    fieldName.setAttribute ("style", "font-weight: bold;")
+    fieldName.appendChild(document.createTextNode("Numéro d'ordre"));
+    form.appendChild(fieldName);
+    textArea = document.createElement("input");
+    textArea.setAttribute("id", "Numéro");
+    textArea.setAttribute("type", "text");
+    textArea.setAttribute("onkeypress", "return event.charCode >= 48 && event.charCode <= 57"); // Allows only numerics characters
+    textArea.setAttribute("class", "areaField");
+    textArea.setAttribute("placeholder", "Numéro d'ordre d'apparition de la question");
+    textArea.setAttribute("value", domainsAndQuestions.questions[domainID][questionID].Numero == null ? "" : domainsAndQuestions.questions[domainID][questionID].Numero);
+    form.appendChild(textArea);
+    /*----------------------------------*/
 	
 	/* Set the area for the coefficient */
 	fieldName = document.createElement ("div");
@@ -247,7 +340,7 @@ function printEditQuestionElements (questionLauncher, questionID, domainID)
 	{
 		selectOption = document.createElement("option");
 		selectOption.setAttribute("value", coefficients[i].idcoefficient);
-		if (domainsAndQuestions.questions[domainID][questionID].CoeffID == i) selectOption.setAttribute("selected", "selected");
+		if (domainsAndQuestions.questions[domainID][questionID].CoeffID == coefficients[i].idcoefficient) selectOption.setAttribute("selected", "selected");
 		selectOption.appendChild(document.createTextNode(coefficients[i].Valeur));
 		selectArea.appendChild(selectOption);
 	}

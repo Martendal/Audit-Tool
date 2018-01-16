@@ -495,12 +495,12 @@ app.get('/deleteQuestion/:QuestionID/:ParentID/:NumOfChild', function (req, res)
 	}
 });
 
-app.get('/editQuestion/:modification', function (req, res)
+app.get('/editQuestion/:QuestionID/:Question/:Numero/:DomainID/:ParentID/:NumOfChild/:CoeffID/:Explication?', function (req, res)
 {
 	if(res)
 	{
-		res.send(dbManager.editQuestion(pool, req.params.modification.QuestionID, req.params.modification.Question, req.params.modification.Explication, req.params.modification.Numero, req.params.modification.ParentID,
-			                            req.params.modification.NumOfChild, req.params.modification.DomainID, req.params.modification.CoeffID));
+		res.send(dbManager.editQuestion(pool, req.params.QuestionID, req.params.Question, req.params.Explication, req.params.Numero, req.params.ParentID,
+			                            req.params.NumOfChild, req.params.DomainID, req.params.CoeffID));
 	}
 });
 
