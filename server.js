@@ -138,20 +138,19 @@ function getAllDomainsQuestions(pool, domainId, callback)
 			/* Sorts the final array by the domainId and by the number the question should appear in the list (ascending order) */
 			domainsAndQuestions.questions.sort(function(a, b)
 			{
-				if (a.DomaineID == b.DomaineID) return a.Numero - b.Numero;	// Same domain
-				else if (a.DomaineID < b.DomaineID) return a.DomaineID;		// Different domain
-				else return b.DomaineID;									// Different domain
+				if (a[0].DomaineID == b[0].DomaineID) return a[0].Numero - b[0].Numero;	// Same domain
+				else return a[0].DomaineID - b[0].DomaineID;							// Different domain
 			});
 
 			/* Sorts the final array by the domainId (ascending order) */
 			domainsAndQuestions.domains.sort(function(a, b)
 			{
-				return a.domainId - b.domainId;									// Different domain
+				return a.iddomaine - b.iddomaine;									// Different domain
 			});
 
 			//console.log("question , ", questions);
-			//console.log("domains: ", domainsAndQuestions.domains);
-			//console.log("questions: ", domainsAndQuestions.questions);
+			console.log("domains: ", domainsAndQuestions.domains);
+			console.log("questions: ", domainsAndQuestions.questions);
 			callback(domainsAndQuestions);
 		}
 	});

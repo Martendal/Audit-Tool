@@ -525,7 +525,7 @@ function putQuestionInForm (domainID)
 		if (domainsAndQuestions.questions[domainID][i].ParentID != 0)
 		{
 			parentRow = document.getElementById ("RowID " + domainsAndQuestions.questions[domainID][i].ParentID);	// Get the parent row
-			row = MainTable.insertRow(Array.prototype.slice.call(MainTable.children).indexOf(parentRow));		// Insert a row under the parent
+			row = MainTable.insertRow(Array.prototype.slice.call(MainTable.children).indexOf(parentRow)+1);			// Insert a row under the parent
 			row.className += "hasParent " + parentRow.className;													// Sets the class of the question
 			if (parentRow.classList.contains("hasChild") == false) parentRow.classList.add("hasChild");				// Delete the useless class from the parent
 		}
@@ -601,6 +601,11 @@ function printTabContent ()
 {
 	var activeTab = document.getElementById("Main Domain Selector");
 	var selectedDomainID = activeTab.selectedIndex;
+	var spanContainer = document.getElementById("DomainQuestions");
+
+	spanContainer.classList.remove ("opened");
+
+	spanContainer.classList.add ("opened");
 
 	if (actualActiveTab != null)
 	{ // There is an active tab so we need to deletes its content from the view
@@ -612,7 +617,7 @@ function printTabContent ()
 		}
 
 		// Delete all other elements that are not a part of the table header
-		while (MainTable.hasChildNodes() && MainTable.lastChild.tagName != "SELECT")
+		while (MainTable.hasChildNodes() && MainTable.lastChild.tagName != "TH")
 		{	
 			console.log("lastChild:", MainTable.lastChild.tagName);
 			MainTable.removeChild(MainTable.lastChild);
@@ -633,12 +638,16 @@ var domainsAndQuestions;
 $.get('/getDomains', array = function(c_domainsAndQuestions)
 {
 	domainsAndQuestions = c_domainsAndQuestions;
+	var divDomain = document.getElementById("DomainSelector");
 	var selectDomain = document.createElement("select");
 	var selectOption;
 
+
 	selectDomain.setAttribute("id", "Main Domain Selector");
-	selectDomain.setAttribute("class", "domainSelector");
+	selectDomain.setAttribute("class", "custom-select sources");
 	selectDomain.setAttribute("onchange", "printTabContent()");
+
+	divDomain.appendChild(selectDomain);
 
 	// Add the different domains as tab
 	for (var i = 0; i < domainsAndQuestions.domains.length; i++) 
@@ -647,7 +656,6 @@ $.get('/getDomains', array = function(c_domainsAndQuestions)
 		selectOption.appendChild(document.createTextNode(domainsAndQuestions.domains[i].iddomaine + ". " + domainsAndQuestions.domains[i].Nom));
 		selectDomain.appendChild(selectOption);
 	}
-	MainTable.appendChild(selectDomain);
 });
 
 /**********************************************************************************/

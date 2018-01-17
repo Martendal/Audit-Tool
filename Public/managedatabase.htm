@@ -226,22 +226,28 @@ tr.highlight:hover
 
 
 .custom-options {
-    position: absolute;
-    display: block;
-    top: 100%; left: 0; right: 0;
-    min-width: 100%;
-    margin: 15px 0;
-    border: 1px solid #b5b5b5;
-    border-radius: 4px;
-    box-sizing: border-box;
-    box-shadow: 0 2px 1px rgba(0,0,0,.07);
-    background: #fff;
-    transition: all .4s ease-in-out;
+   position: absolute;
+   display: block;
+   top: 100%; left: 0; right: 0;
+   min-width: 100%;
+   margin: 15px 0;
+   border: 1px solid #b5b5b5;
+   border-radius: 4px;
+   box-sizing: border-box;
+   box-shadow: 0 2px 1px rgba(0,0,0,.07);
+   transition: all .4s ease-in-out;
     
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transform: translateY(-15px);
+   opacity: 0;
+   visibility: hidden;
+   pointer-events: none;
+   transform: translateY(-15px);
+  }
+
+ .custom-options.opened {
+   opacity: 1;
+   visibility: visible;
+   pointer-events: all;
+   transform: translateY(0);
   }
 
 
@@ -249,11 +255,14 @@ tr.highlight:hover
 
 <script type="text/javascript" src="dbManager.js"></script>
 
+<div id="DomainSelector"></div>
+<span id="DomainQuestions" class="custom-options">
 <table id="MainTable">
-	<tbody id="tabs">
+		<tbody id="tabs">
 
-	</tbody>
+		</tbody>
 </table>
+</span>
 
 <!-- The Modal -->
 <div id="deleteModal" class="modal">
