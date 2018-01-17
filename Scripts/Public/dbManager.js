@@ -109,8 +109,22 @@ function printAddQuestionElements (questionLauncher, parentQuestionID, domainID)
 	form.appendChild(selectArea);
 	/*----------------------------------*/
 
+	fieldName = document.createElement ("div");
 	submit.setAttribute("type", "submit");
-	form.appendChild(submit);
+	fieldName.appendChild(submit);
+
+	/* Cancel button */
+	submit = document.createElement("button");
+	fieldName.appendChild(submit);
+	submit.appendChild(document.createTextNode("Annuler"));
+	submit.onclick = function ()
+	{
+		actualAction.container.removeChild(actualAction.div);
+		actualAction = null;
+	};
+	/*---------------*/
+
+	form.appendChild(fieldName);
 
 	newElement.appendChild(form);
 
@@ -153,8 +167,8 @@ function printAddQuestionElements (questionLauncher, parentQuestionID, domainID)
 function editQuestion (questionID, numOfChild)
 {
 
-    $.get('/editQuestion/' + questionID + '/' + document.getElementById("Intitulé").value + '/' + document.getElementById("Numéro").value + '/' + domainsAndQuestions.domains[document.getElementById("DomainID").value].iddomaine + '/' + document.getElementById("ParentID").value + '/'
-                           + numOfChild + '/'  + document.getElementById("Coefficient").value + '/' + document.getElementById("Explication").value);
+	$.get('/editQuestion/' + questionID + '/' + document.getElementById("Intitulé").value + '/' + document.getElementById("Numéro").value + '/' + domainsAndQuestions.domains[document.getElementById("DomainID").value].iddomaine + '/' + document.getElementById("ParentID").value + '/'
+						   + numOfChild + '/'  + document.getElementById("Coefficient").value + '/' + document.getElementById("Explication").value);
 }
 
 
@@ -166,38 +180,38 @@ function editQuestion (questionID, numOfChild)
 /******************************************************************************************/
 function updateSelectQuestion (questionID, domainID)
 {
-    var selectParentID = document.getElementById ("ParentID");
-    var selectedDomainID = document.getElementById ("DomainID").selectedIndex;
+	var selectParentID = document.getElementById ("ParentID");
+	var selectedDomainID = document.getElementById ("DomainID").selectedIndex;
 
-    console.log("selectedDomainID: ", selectedDomainID);
+	console.log("selectedDomainID: ", selectedDomainID);console.log("DomainID: ", domainID);
 
-    while (selectParentID.hasChildNodes())
-    {
-        selectParentID.removeChild(selectParentID.lastChild);
-    }
+	while (selectParentID.hasChildNodes())
+	{
+		selectParentID.removeChild(selectParentID.lastChild);
+	}
 
-    // None option
-    var selectOption = document.createElement("option");
-    selectOption.setAttribute("value", "0");
-    selectOption.appendChild(document.createTextNode("Aucune"));
-    selectParentID.appendChild(selectOption);
-    // Graphical option
-    selectOption = document.createElement("option");
-    selectOption.setAttribute("disabled", "disabled");
-    selectOption.appendChild(document.createTextNode("──────────"));
-    selectParentID.appendChild(selectOption);
-    // All the others available questions (except the sub-question owned by the question)
-    for (var i = 0; i < domainsAndQuestions.questions[selectedDomainID].length; i++)
-    {
-        if (domainsAndQuestions.questions[domainID][i].idquestion != domainsAndQuestions.questions[domainID][questionID].idquestion && domainsAndQuestions.questions[domainID][i].ParentID != domainsAndQuestions.questions[domainID][questionID].idquestion)
-        {
-            selectOption = document.createElement("option");
-            selectOption.setAttribute("value", domainsAndQuestions.questions[domainID][i].idquestion);
-            if (domainsAndQuestions.questions[domainID][questionID].ParentID == domainsAndQuestions.questions[domainID][i].idquestion) selectOption.setAttribute("selected", "selected");
-            selectOption.appendChild(document.createTextNode(domainsAndQuestions.questions[domainID][i].idquestion + ". " + domainsAndQuestions.questions[domainID][i].Question));
-            selectArea.appendChild(selectOption);
-        }
-    }
+	// None option
+	var selectOption = document.createElement("option");
+	selectOption.setAttribute("value", "0");
+	selectOption.appendChild(document.createTextNode("Aucune"));
+	selectParentID.appendChild(selectOption);
+	// Graphical option
+	selectOption = document.createElement("option");
+	selectOption.setAttribute("disabled", "disabled");
+	selectOption.appendChild(document.createTextNode("──────────"));
+	selectParentID.appendChild(selectOption);
+	// All the others available questions (except the sub-question owned by the question)
+	for (var i = 0; i < domainsAndQuestions.questions[selectedDomainID].length; i++)
+	{
+		if (domainsAndQuestions.questions[selectedDomainID][i].idquestion != domainsAndQuestions.questions[domainID][questionID].idquestion && domainsAndQuestions.questions[selectedDomainID][i].ParentID != domainsAndQuestions.questions[domainID][questionID].idquestion)
+		{
+			selectOption = document.createElement("option");
+			selectOption.setAttribute("value", domainsAndQuestions.questions[selectedDomainID][i].idquestion);
+			if (domainsAndQuestions.questions[domainID][questionID].ParentID == domainsAndQuestions.questions[selectedDomainID][i].idquestion) selectOption.setAttribute("selected", "selected");
+			selectOption.appendChild(document.createTextNode(domainsAndQuestions.questions[selectedDomainID][i].idquestion + ". " + domainsAndQuestions.questions[selectedDomainID][i].Question));
+			selectParentID.appendChild(selectOption);
+		}
+	}
 }
 
 
@@ -220,7 +234,7 @@ function printEditQuestionElements (questionLauncher, questionID, domainID)
 	var selectArea = document.createElement ("select");					 // The selection area	
 	var selectOption = document.createElement ("option");				 // The options of the selection area
 	var fieldName = document.createElement ("div");						 // The name of each field
-	var submit  = document.createElement("input");						 // The submit button to confirm the modification
+	var submit  = document.createElement("input");						 // The submit button to confirm or cancel the modification
 
 	/* Sets the title of the action */
 	title.appendChild(document.createTextNode("Modification d'une question"));
@@ -231,26 +245,26 @@ function printEditQuestionElements (questionLauncher, questionID, domainID)
 	form.setAttribute("action", "#!/managedatabase");
 	form.setAttribute("onsubmit", "editQuestion(" + domainsAndQuestions.questions[domainID][questionID].idquestion + ", " + domainsAndQuestions.questions[domainID][questionID].NumOfChild + ")");
 
-    /* Set the area for the domain */
-    fieldName = document.createElement ("div");
-    fieldName.appendChild(document.createTextNode("Domaine"));
-    fieldName.setAttribute ("style", "font-weight: bold;")
-    form.appendChild(fieldName);
-    // None option
-    selectArea.setAttribute("id", "DomainID");
-    selectArea.setAttribute("onchange", "updateSelectQuestion(" + questionID + ", " + domainID + ")");
-    // All the others available questions
-    for (var i = 0; i < domainsAndQuestions.domains.length; i++) 
-    {
-        selectOption = document.createElement("option");
-        selectOption.setAttribute("value", i);
-        if (domainsAndQuestions.domains[i].iddomaine == domainsAndQuestions.domains[domainID].iddomaine) selectOption.setAttribute("selected", "selected");
-        selectOption.appendChild(document.createTextNode(domainsAndQuestions.domains[i].iddomaine + ". " + domainsAndQuestions.domains[i].Nom));
-        selectArea.appendChild(selectOption);
-    }
+	/* Set the area for the domain */
+	fieldName = document.createElement ("div");
+	fieldName.appendChild(document.createTextNode("Domaine"));
+	fieldName.setAttribute ("style", "font-weight: bold;")
+	form.appendChild(fieldName);
+	// None option
+	selectArea.setAttribute("id", "DomainID");
+	selectArea.setAttribute("onchange", "updateSelectQuestion(" + questionID + ", " + domainID + ")");
+	// All the others available questions
+	for (var i = 0; i < domainsAndQuestions.domains.length; i++) 
+	{
+		selectOption = document.createElement("option");
+		selectOption.setAttribute("value", i);
+		if (domainsAndQuestions.domains[i].iddomaine == domainsAndQuestions.domains[domainID].iddomaine) selectOption.setAttribute("selected", "selected");
+		selectOption.appendChild(document.createTextNode(domainsAndQuestions.domains[i].iddomaine + ". " + domainsAndQuestions.domains[i].Nom));
+		selectArea.appendChild(selectOption);
+	}
 
-    form.appendChild(selectArea);
-    /*----------------------------------*/
+	form.appendChild(selectArea);
+	/*----------------------------------*/
 
 	/* Set the area for the parent question */
 	fieldName = document.createElement ("div");
@@ -258,7 +272,7 @@ function printEditQuestionElements (questionLauncher, questionID, domainID)
 	fieldName.setAttribute ("style", "font-weight: bold;")
 	form.appendChild(fieldName);
 	// None option
-    selectArea = document.createElement ("select");
+	selectArea = document.createElement ("select");
 	selectArea.setAttribute("id", "ParentID");
 	selectOption = document.createElement("option");
 	selectOption.setAttribute("value", "0");
@@ -272,21 +286,21 @@ function printEditQuestionElements (questionLauncher, questionID, domainID)
 	// All the others available questions (except the sub-question owned by the question)
 	for (var i = 0; i < domainsAndQuestions.questions[domainID].length; i++) 
 	{
-        if (domainsAndQuestions.questions[domainID][i].idquestion != domainsAndQuestions.questions[domainID][questionID].idquestion && domainsAndQuestions.questions[domainID][i].ParentID != domainsAndQuestions.questions[domainID][questionID].idquestion)
-        {
-		    selectOption = document.createElement("option");
-		    selectOption.setAttribute("value", domainsAndQuestions.questions[domainID][i].idquestion);
-		    if (domainsAndQuestions.questions[domainID][questionID].ParentID == domainsAndQuestions.questions[domainID][i].idquestion) selectOption.setAttribute("selected", "selected");
-		    selectOption.appendChild(document.createTextNode(domainsAndQuestions.questions[domainID][i].idquestion + ". " + domainsAndQuestions.questions[domainID][i].Question));
-		    selectArea.appendChild(selectOption);
-        }
+		if (domainsAndQuestions.questions[domainID][i].idquestion != domainsAndQuestions.questions[domainID][questionID].idquestion && domainsAndQuestions.questions[domainID][i].ParentID != domainsAndQuestions.questions[domainID][questionID].idquestion)
+		{
+			selectOption = document.createElement("option");
+			selectOption.setAttribute("value", domainsAndQuestions.questions[domainID][i].idquestion);
+			if (domainsAndQuestions.questions[domainID][questionID].ParentID == domainsAndQuestions.questions[domainID][i].idquestion) selectOption.setAttribute("selected", "selected");
+			selectOption.appendChild(document.createTextNode(domainsAndQuestions.questions[domainID][i].idquestion + ". " + domainsAndQuestions.questions[domainID][i].Question));
+			selectArea.appendChild(selectOption);
+		}
 	}
 
 	form.appendChild(selectArea);
 	/*----------------------------------*/
 
 	/* Set the area for the question formulation */
-    fieldName = document.createElement ("div");
+	fieldName = document.createElement ("div");
 	fieldName.appendChild(document.createTextNode("Question"));
 	fieldName.setAttribute ("style", "font-weight: bold;")
 	form.appendChild(fieldName);
@@ -314,20 +328,20 @@ function printEditQuestionElements (questionLauncher, questionID, domainID)
 	form.appendChild(textArea);
 	/*----------------------------------*/
 
-    /* Set the area for the apparition number */
-    fieldName = document.createElement ("div");
-    fieldName.setAttribute ("style", "font-weight: bold;")
-    fieldName.appendChild(document.createTextNode("Numéro d'ordre"));
-    form.appendChild(fieldName);
-    textArea = document.createElement("input");
-    textArea.setAttribute("id", "Numéro");
-    textArea.setAttribute("type", "text");
-    textArea.setAttribute("onkeypress", "return event.charCode >= 48 && event.charCode <= 57"); // Allows only numerics characters
-    textArea.setAttribute("class", "areaField");
-    textArea.setAttribute("placeholder", "Numéro d'ordre d'apparition de la question");
-    textArea.setAttribute("value", domainsAndQuestions.questions[domainID][questionID].Numero == null ? "" : domainsAndQuestions.questions[domainID][questionID].Numero);
-    form.appendChild(textArea);
-    /*----------------------------------*/
+	/* Set the area for the apparition number */
+	fieldName = document.createElement ("div");
+	fieldName.setAttribute ("style", "font-weight: bold;")
+	fieldName.appendChild(document.createTextNode("Numéro d'ordre"));
+	form.appendChild(fieldName);
+	textArea = document.createElement("input");
+	textArea.setAttribute("id", "Numéro");
+	textArea.setAttribute("type", "text");
+	textArea.setAttribute("onkeypress", "return event.charCode >= 48 && event.charCode <= 57"); // Allows only numerics characters
+	textArea.setAttribute("class", "areaField");
+	textArea.setAttribute("placeholder", "Numéro d'ordre d'apparition de la question");
+	textArea.setAttribute("value", domainsAndQuestions.questions[domainID][questionID].Numero == null ? "" : domainsAndQuestions.questions[domainID][questionID].Numero);
+	form.appendChild(textArea);
+	/*----------------------------------*/
 	
 	/* Set the area for the coefficient */
 	fieldName = document.createElement ("div");
@@ -348,9 +362,23 @@ function printEditQuestionElements (questionLauncher, questionID, domainID)
 	form.appendChild(selectArea);
 	/*----------------------------------*/
 
+	fieldName = document.createElement ("div");
 	submit.setAttribute("type", "submit");
-	form.appendChild(submit);
+	fieldName.appendChild(submit);
 
+	/* Cancel button */
+	submit = document.createElement("button");
+	fieldName.appendChild(submit);
+	submit.appendChild(document.createTextNode("Annuler"));
+	submit.onclick = function ()
+	{
+		actualAction.container.removeChild(actualAction.div);
+		actualAction = null;
+	};
+	/*---------------*/
+
+
+	form.appendChild(fieldName);
 	newElement.appendChild(form);
 
 	/* Sets the actual action element regarding if there is a parent question or not */
@@ -360,15 +388,6 @@ function printEditQuestionElements (questionLauncher, questionID, domainID)
 
 		actualAction = { 
 			container: tableDataContainer,
-			div: newElement
-		};
-	}
-	else
-	{
-		MainTable.appendChild(newElement);
-
-		actualAction = { 
-			container: MainTable,
 			div: newElement
 		};
 	}
@@ -420,8 +439,8 @@ function askDeleteQuestion (questionID, parentID, numOfChild)
 
 	// When the user clicks on <span> (x), close the modal
 	span.onclick = function() {
-	    modal.removeChild(modalContent);
-    	modal.style.display = "none";
+		modal.removeChild(modalContent);
+		modal.style.display = "none";
 	}
 
 	modalContent.appendChild(modalHeader);
@@ -449,9 +468,9 @@ function askDeleteQuestion (questionID, parentID, numOfChild)
 
 	// Proceed to deletion
 	yesButton.onclick = function() {
-	    $.get('/deleteQuestion/' + questionID + '/' + parentID + '/' + numOfChild);
-	    modal.removeChild(modalContent);
-    	modal.style.display = "none";
+		$.get('/deleteQuestion/' + questionID + '/' + parentID + '/' + numOfChild);
+		modal.removeChild(modalContent);
+		modal.style.display = "none";
 	}
 	modalFooter.appendChild(yesButton);
 
@@ -464,21 +483,21 @@ function askDeleteQuestion (questionID, parentID, numOfChild)
 
 	// Cancel deletion
 	noButton.onclick = function() {
-	    modal.removeChild(modalContent);
-    	modal.style.display = "none";
+		modal.removeChild(modalContent);
+		modal.style.display = "none";
 	}
 	modalFooter.appendChild(noButton);
 
 
 	// When the user clicks anywhere outside of the modal, close it
 	window.onclick = function(event) {
-	    if (event.target == modal) {
-	        modal.removeChild(modalContent);
-    		modal.style.display = "none";
-	    }
+		if (event.target == modal) {
+			modal.removeChild(modalContent);
+			modal.style.display = "none";
+		}
 	}
 
-    modal.style.display = "block";
+	modal.style.display = "block";
 }
 
 
@@ -491,52 +510,79 @@ function putQuestionInForm (domainID)
 {
 	var questionID; // The question in the database
 	var row;                // The row containing the question
+	var parentRow;
 	var cell;           // The cell containing the question
 	var button;         // The different buttons (add, edit and delete)
+	var div;
+	var backgroundColor = 0;
 
 	for (var i = 0; i < domainsAndQuestions.questions[domainID].length; i++) 
 	{
 		questionID = "Question " + domainsAndQuestions.questions[domainID][i].idquestion;
 
-		row = MainTable.insertRow(i);
+		
+		/* If the question has a parent we put the question under it */
+		if (domainsAndQuestions.questions[domainID][i].ParentID != 0)
+		{
+			parentRow = document.getElementById ("RowID " + domainsAndQuestions.questions[domainID][i].ParentID);	// Get the parent row
+			row = MainTable.insertRow(Array.prototype.slice.call(MainTable.children).indexOf(parentRow));		// Insert a row under the parent
+			row.className += "hasParent " + parentRow.className;													// Sets the class of the question
+			if (parentRow.classList.contains("hasChild") == false) parentRow.classList.add("hasChild");				// Delete the useless class from the parent
+		}
+		else // The question has no parent
+		{	
+			row = MainTable.insertRow(i);
+			if (backgroundColor%2 == 0) row.className += "sombre highlight ";
+			else row.className += "clair highlight ";
+			backgroundColor++;
+		}
+
+		
 		cell = row.insertCell (0);
 
-		/* Set row's attributes */
-		row.setAttribute("id", "RowID " + i);
-		if (i%2 == 0) row.setAttribute("class", "sombre");
-		else row.setAttribute("class", "clair");
-		/*-----------------------*/
+			/* Set row's attributes */
+			row.setAttribute("id", "RowID " + domainsAndQuestions.questions[domainID][i].idquestion);
+			/*-----------------------*/
 
-		cell.setAttribute("id", questionID);
-		cell.setAttribute("class", "borderL");
-		cell.appendChild(document.createTextNode(domainsAndQuestions.questions[domainID][i].Question));
+			cell.setAttribute("id", questionID);
+			cell.setAttribute("class", "borderL");
+			cell.appendChild(document.createTextNode(domainsAndQuestions.questions[domainID][i].Question));
 
-		/* Cell containing the add button */
-		cell = row.insertCell (1);
-		button = document.createElement("button");
-		cell.setAttribute("class", "borderC");
-		button.setAttribute("class", "buttonAdd");
-		button.setAttribute("onClick", "printAddQuestionElements(\"" + questionID + "\"," + i + "," + domainID + ")");
-		cell.appendChild (button);
-		/*--------------------------------*/
+			/* Cell containing the add button */
+			cell = row.insertCell (1);
+			button = document.createElement("button");
+			cell.setAttribute("class", "borderC");
+			button.setAttribute("class", "buttonAdd");
+			button.setAttribute("onClick", "printAddQuestionElements(\"" + questionID + "\"," + i + "," + domainID + ")");
+			div = document.createElement("div");
+			div.setAttribute("class", "verticalCenter");
+			div.appendChild(button);
+			cell.appendChild (div);
+			/*--------------------------------*/
 
-		/* Cell containing the edit button */
-		cell = row.insertCell (2);
-		button = document.createElement("button");
-		cell.setAttribute("class", "borderC");
-		button.setAttribute("class", "buttonEdit");
-		button.setAttribute("onClick", "printEditQuestionElements(\"" + questionID + "\"," + i + "," + domainID + ")");
-		cell.appendChild (button);
-		/*---------------------------------*/
+			/* Cell containing the edit button */
+			cell = row.insertCell (2);
+			button = document.createElement("button");
+			cell.setAttribute("class", "borderC");
+			button.setAttribute("class", "buttonEdit");
+			button.setAttribute("onClick", "printEditQuestionElements(\"" + questionID + "\"," + i + "," + domainID + ")");
+			div = document.createElement("div");
+			div.setAttribute("class", "verticalCenter");
+			div.appendChild(button);
+			cell.appendChild (div);
+			/*---------------------------------*/
 
-		/* Cell containing the delete button */
-		cell = row.insertCell (3);
-		cell.setAttribute("class", "borderR");
-		button = document.createElement("button");
-		button.setAttribute("class", "buttonDelete");
-		button.setAttribute("onClick", "askDeleteQuestion(" + domainsAndQuestions.questions[domainID][i].idquestion + "," + domainsAndQuestions.questions[domainID][i].ParentID + "," + domainsAndQuestions.questions[domainID][i].NumOfChild + ")");
-		cell.appendChild (button);
-		/*-----------------------------------*/
+			/* Cell containing the delete button */
+			cell = row.insertCell (3);
+			cell.setAttribute("class", "borderR");
+			button = document.createElement("button");
+			button.setAttribute("class", "buttonDelete");
+			button.setAttribute("onClick", "askDeleteQuestion(" + domainsAndQuestions.questions[domainID][i].idquestion + "," + domainsAndQuestions.questions[domainID][i].ParentID + "," + domainsAndQuestions.questions[domainID][i].NumOfChild + ")");
+			div = document.createElement("div");
+			div.setAttribute("class", "verticalCenter");
+			div.appendChild(button);
+			cell.appendChild (div);
+			/*-----------------------------------*/
 	}
 
 	/* Button to add a new question */
@@ -544,22 +590,17 @@ function putQuestionInForm (domainID)
 	button.setAttribute("class", "buttonAdd");
 	button.setAttribute("onClick", "printAddQuestionElements(" + null + "," + null + "," + domainID + ")");
 	MainTable.appendChild (button);
-	/*--------------------------------*/
+	/*------------------------------*/
 }
 
 
 /***********************************************************************************/
 /*             Print the question associated to the tab (here a domain)            */
-/*                                                                                 */
-/*  @Param triggerTabID : the ID of the tab that call this function                */
-/*  @Param arrayID      : the index where the domain is located in retrieves data  */
 /***********************************************************************************/
-function printTabContent (triggerTabID, arrayID)
+function printTabContent ()
 {
-	var activeTab = document.getElementById(triggerTabID);
-	var classValue = activeTab.attributes.getNamedItem("class").value
-
-	if (classValue.includes("active")) return;    // The tab is already active so we don't need to print the content again
+	var activeTab = document.getElementById("Main Domain Selector");
+	var selectedDomainID = activeTab.selectedIndex;
 
 	if (actualActiveTab != null)
 	{ // There is an active tab so we need to deletes its content from the view
@@ -571,21 +612,19 @@ function printTabContent (triggerTabID, arrayID)
 		}
 
 		// Delete all other elements that are not a part of the table header
-		while (MainTable.hasChildNodes() && MainTable.lastChild.tagName != "TH")
+		while (MainTable.hasChildNodes() && MainTable.lastChild.tagName != "SELECT")
 		{	
 			console.log("lastChild:", MainTable.lastChild.tagName);
 			MainTable.removeChild(MainTable.lastChild);
 		}
-		actualActiveTab.setAttribute ("class", actualActiveTab.attributes.getNamedItem("class").value.replace (" active", ""));
 	}
 
 	actualActiveTab = activeTab;
 	actualAction = null;
-	classValue = classValue + " active";
-	activeTab.setAttribute ("class", classValue);
 
-	putQuestionInForm (arrayID);
+	putQuestionInForm (selectedDomainID);
 }
+
 
 /**********************************************************************************/
 /*                  Retrieve the domains and questions from the database          */
@@ -594,24 +633,21 @@ var domainsAndQuestions;
 $.get('/getDomains', array = function(c_domainsAndQuestions)
 {
 	domainsAndQuestions = c_domainsAndQuestions;
-	var newElement;
-	var tabID;
+	var selectDomain = document.createElement("select");
+	var selectOption;
+
+	selectDomain.setAttribute("id", "Main Domain Selector");
+	selectDomain.setAttribute("class", "domainSelector");
+	selectDomain.setAttribute("onchange", "printTabContent()");
 
 	// Add the different domains as tab
 	for (var i = 0; i < domainsAndQuestions.domains.length; i++) 
 	{
-		tabID = "Domaine " + domainsAndQuestions.domains[i].iddomaine;
-
-		newElement = document.createElement("th");
-
-		newElement.setAttribute("id", tabID);           // The ID of the tab
-		newElement.setAttribute("class", "tab");        // The style of the tab
-		newElement.setAttribute("type", "button");  // Tell that the tab is clackable
-		newElement.setAttribute("onClick", "printTabContent(\"" + tabID + "\", " + i + ")");    // Set the function to call in case of click
-		newElement.appendChild(document.createTextNode(domainsAndQuestions.domains[i].Nom));    // Add the domain name to the view
-
-		MainTable.appendChild(newElement);  // Add the tab to the table
+		selectOption = document.createElement("option");
+		selectOption.appendChild(document.createTextNode(domainsAndQuestions.domains[i].iddomaine + ". " + domainsAndQuestions.domains[i].Nom));
+		selectDomain.appendChild(selectOption);
 	}
+	MainTable.appendChild(selectDomain);
 });
 
 /**********************************************************************************/
