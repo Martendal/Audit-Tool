@@ -380,7 +380,7 @@ dbManager.prototype.editQuestion = function (pool, p_QuestionID, p_Question, p_E
     console.log("BEGIN UPDATE QUESTION");
  
     console.log ("QuestionID: ", p_QuestionID);
-    console.log ("Question: ", p_QuestionID);
+    console.log ("Question: ", p_Question);
     console.log ("Explication: ", p_Explication);
     console.log ("Numero: ", p_Numero);
     console.log ("ParentID: ", p_ParentID);

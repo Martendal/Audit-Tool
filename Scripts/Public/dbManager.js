@@ -166,9 +166,28 @@ function printAddQuestionElements (questionLauncher, parentQuestionID, domainID)
 /******************************************************************************************/
 function editQuestion (questionID, numOfChild)
 {
+	/*$.get('/editQuestion/' + questionID + '/' + question + '/' + document.getElementById("Numéro").value + '/' + domainsAndQuestions.domains[document.getElementById("DomainID").value].iddomaine + '/' + document.getElementById("ParentID").value + '/'
+						   + numOfChild + '/'  + document.getElementById("Coefficient").value + '/' + document.getElementById("Explication").value);*/
+	$.ajax({
+            url: '/editQuestion',
+            type: 'POST',
+            data: {
+                arr: [ 	questionID,
+              		   	document.getElementById("Intitulé").value,
+              		   	document.getElementById("Explication").value,
+              		   	document.getElementById("Numéro").value,
+              		   	document.getElementById("ParentID").value,
+              		   	numOfChild,
+              		   	domainsAndQuestions.domains[document.getElementById("DomainID").value].iddomaine,
+						document.getElementById("Coefficient").value
 
-	$.get('/editQuestion/' + questionID + '/' + document.getElementById("Intitulé").value + '/' + document.getElementById("Numéro").value + '/' + domainsAndQuestions.domains[document.getElementById("DomainID").value].iddomaine + '/' + document.getElementById("ParentID").value + '/'
-						   + numOfChild + '/'  + document.getElementById("Coefficient").value + '/' + document.getElementById("Explication").value);
+
+                ]
+            },
+            success: function(data){
+                console.log(data);
+            }
+        });
 }
 
 

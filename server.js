@@ -112,12 +112,12 @@ function getAllDomainsQuestions(pool, domainId, callback)
 				}
 				else {
 					//console.log ("domaine: ", data.iddomaine);
-					connection.query("SELECT * FROM question where DomaineId = " + mysql.escape(data.iddomaine), function(err, res) {
+					connection.query("SELECT * FROM question WHERE DomaineID = " + mysql.escape(data.iddomaine), function(err, res) {
 						connection.release();
 						if (err) cb(err);
 						else{
 
-						//console.log(res);
+						//console.log(res[0]);
 							domainsAndQuestions.domains.push(data);
 							domainsAndQuestions.questions.push(res);
 							cb();
@@ -134,23 +134,36 @@ function getAllDomainsQuestions(pool, domainId, callback)
 			throw err;
 		}
 		else {
+			
 
-			/* Sorts the final array by the domainId and by the number the question should appear in the list (ascending order) */
+			/* Sorts the final question array by the domainId (ascending order) */
 			domainsAndQuestions.questions.sort(function(a, b)
 			{
-				if (a[0].DomaineID == b[0].DomaineID) return a[0].Numero - b[0].Numero;	// Same domain
-				else return a[0].DomaineID - b[0].DomaineID;							// Different domain
+				return a[0].DomaineID - b[0].DomaineID;
 			});
+
+			/* Sorts each question array by the apparition number (ascending order) */
+			for (var i = 0; i < domainsAndQuestions.questions.length; i++) 
+			{
+				domainsAndQuestions.questions[i].sort(function(a, b)
+				{
+					if (a.ParentID > a.idquestion || (a.ParentID == b.ParentID && a.ParentID > 0)) return b.Numero - a.Numero;  // Question "a" has a parent that is lower in the array (it is then really important to put "a" after "b" to avoid problem with its creation view !!!). 
+																																// The second check (after the OR) is to respect the apprition number in case "a" and "b" have the same parent
+					return a.Numero - b.Numero	// Question "a" should be put upper in the array because its apparition number is lower
+				});
+			}
+
+
+			console.log("question: ", domainsAndQuestions.questions);
 
 			/* Sorts the final array by the domainId (ascending order) */
 			domainsAndQuestions.domains.sort(function(a, b)
 			{
-				return a.iddomaine - b.iddomaine;									// Different domain
+				return a.iddomaine - b.iddomaine;
 			});
 
 			//console.log("question , ", questions);
-			console.log("domains: ", domainsAndQuestions.domains);
-			console.log("questions: ", domainsAndQuestions.questions);
+			//console.log("domains: ", domainsAndQuestions.domains);
 			callback(domainsAndQuestions);
 		}
 	});
@@ -494,12 +507,13 @@ app.get('/deleteQuestion/:QuestionID/:ParentID/:NumOfChild', function (req, res)
 	}
 });
 
-app.get('/editQuestion/:QuestionID/:Question/:Numero/:DomainID/:ParentID/:NumOfChild/:CoeffID/:Explication?', function (req, res)
+app.post('/editQuestion', function (req, res)
 {
 	if(res)
 	{
-		res.send(dbManager.editQuestion(pool, req.params.QuestionID, req.params.Question, req.params.Explication, req.params.Numero, req.params.ParentID,
-			                            req.params.NumOfChild, req.params.DomainID, req.params.CoeffID));
+		console.log(req.body);
+		res.send(dbManager.editQuestion(pool, req.body.arr[0], req.body.arr[1], req.body.arr[2], req.body.arr[3], req.body.arr[4],
+			                            req.body.arr[5], req.body.arr[6], req.body.arr[7]));
 	}
 });
 
