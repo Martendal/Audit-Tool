@@ -12,6 +12,10 @@ function menuController ($scope, $http) {
 			"menuName":"New Audit",
 			"href":"#!newaudit"
 		},
+		{
+			"menuName":"Load Audit",
+			"href":"#!loadaudit"
+		},
 		/*{
 			"menuName":"Saved Audits",
 			"href":"#!savedaudit"
@@ -131,8 +135,8 @@ function createDomainList($http, questions) {
 	app.config(function($routeProvider) {
 		$routeProvider
 		.when("/newaudit", {
-			templateUrl : "newAudit.htm",
-			controller : "newAuditCtrl"
+			templateUrl : "newAuditV2.htm",
+			//controller : "newAuditCtrl"
 		})
 		.when("/savedaudit", {
 			templateUrl : "savedAudit.htm"
@@ -145,6 +149,9 @@ function createDomainList($http, questions) {
 		})
 		.when("/managedatabase", {
 			templateUrl : "managedatabase.htm"
+		})
+		.when("/loadaudit", {
+			templateUrl : "loadAudit.htm"
 		})
 		.otherwise({
 			templateUrl : "newAudit.htm"

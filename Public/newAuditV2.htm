@@ -1,0 +1,160 @@
+<h1>New Audit</h1>
+
+<div ng-app="auditTool" ng-controller="newAuditCtrl">
+    
+    <div class="sv_bootstrap_css">
+    	<div class="sv_custom_header"></div>
+    	<div class="sv_container">
+    		<div class="panel-heading card-header">
+    			<h3></h3>
+    		</div>
+    		
+
+    		<div class="panel-body card-block">
+    			<div class="sv_qstn" style="width: 100%;">
+    				<div>
+    					<h5>
+    						<span id="domainName">Formation des employés</span>
+    					</h5>
+    				</div>
+    				<div class="">
+    					<fieldset>
+    						<table id="questionTable" class="table table-striped">
+    							<thead>
+    								<tr>
+    									<td></td>
+    									<th><span>1</span></th>
+    									<th><span>2</span></th>
+    									<th><span>3</span></th>
+    									<th><span>4</span></th>
+    									<th><span>5</span></th>
+    									<th><span>I don't know</span></th>
+    									<th><span>Not concerned</span></th>
+    								</tr>
+    							</thead>
+    							<tbody id="tableBody">
+    								
+    							</tbody>
+    						</table>
+    					</fieldset>
+    				</div>
+    			</div>
+    			<div id="questionnaireButtons" class="panel-footer card-footer">
+    				<input id="btnNextPage" type="button" class="button btn-lg sv_prev_btn" onclick="nextPage()">
+    				<input type="button" class="button btn-lg sv_prev_btn" onclick="previousPage()">
+    				<a id="saveAudit">Save Audit</a>
+    				<input id="importJson" type="button" class="button btn-lg sv_prev_btn">
+
+    			</div>
+    		</div>
+    		
+
+    	</div>
+    </div>
+
+
+    <canvas id="chartResult" width="400" height="400"></canvas>
+</div>
+
+
+
+<script type="text/javascript">
+	var id = '1';
+	var page = 0;
+	var json = 0;
+	var coef = 0;
+
+	function getJson(id) {
+		$.get('/getCoefficients', function(coef_imported) {
+			$.get('/getPackage/' + id, function(json_imported) {
+				json = json_imported;
+			});
+			coef = coef_imported;
+		});
+	}
+
+	function nextPage() {
+		page++;
+		$("#tableBody").empty();
+		pageLoader(page, json, coef);
+	}
+
+	function previousPage() {
+		page--;
+		$("#tableBody").empty();
+		pageLoader(page, json, coef);
+	}
+
+	function updateJsonDownloader(json) {
+		var data = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(json));
+		$("#saveAudit").attr("href", "data:" + data);
+		$("#saveAudit").attr("download", 'download="audit.json"');
+	}
+
+	function saveRadioChoice(/*json, page, */questionNumber, radioValue) {
+		var q = $.grep(json.pages[page].questions[0].rows, function(e){ return e.value == questionNumber; });
+		if(q) {
+			json.pages[page].questions[0].rows[q].answer = radioValue;
+		}
+			console.log("Choice saved");
+
+	}
+
+
+	function pageLoader(page, json, coef) {
+		//$.get('/getCoefficients', function(coef) {
+			//$.get('/getPackage/' + id, function(json) {
+		        console.log('json: ', json);
+		        var pageMax = json.pages.length;
+		        //console.log(pageMax);
+		        var tbody = $("#tableBody");
+		        for(var line=0; line<json.pages[page].questions[0].rows.length; line++) { //Iteration over each question of the domain
+		        	var question = json.pages[page].questions[0].rows[line];
+		        	//console.log(question);
+		        	var tr = document.createElement("tr");
+		        	var td = document.createElement("td");
+		        	var q = question.text;
+		        	var domain = json.pages[page].questions[0].title;
+		        	//console.log(domain);
+		       		$("#domainName").text(domain);
+
+		        	td.append(q);
+		        	tr.append(td);
+		        	for (var i=1; i<8; i++) {
+		        		td = document.createElement("td");
+		        		var label = document.createElement("label");
+		        		$(label).addClass("sv_q_m_label");
+		        		var input = document.createElement("input");
+		        		input.type = "radio";
+		        		input.name = domain + line;
+		        		input.value = question.value;
+		        		input.onclick = "saveRadioChoice("+question.value+","+i+")";
+		        		//input.attr("onclick", "saveRadioChoice("+question.value+","+i+")");
+		        		var span1 = document.createElement("span");
+		        		var span2 = document.createElement("span");
+		        		$(span1).addClass("circle");
+		        		$(span2).addClass("check");
+		        		if(question.answer == i) {
+		        			input.checked = true;
+		        		}
+		        		label.append(input, span1, span2);
+		        		td.append(label);
+		        		tr.append(td);
+		        	}
+		        	tbody.append(tr);
+
+		        }
+		        updateJsonDownloader(json);
+
+			//});
+		//});
+	}
+	getJson(1);
+	setTimeout(function(){
+		pageLoader(page, json, coef);
+	}, 500);
+	
+	
+	
+
+</script>

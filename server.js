@@ -283,6 +283,8 @@ function associateQuestionsToDomainName (pool, questions, callback) {
 				questions: [data]			// The question associated to this domain
 			};
 
+			//console.log(data);
+
 			getAssociatedDomainName(pool, data.DomaineID, function(dom) // Retreives the correct domain name and push the result to the array
 			{
 				obj.domainName = dom[0].Nom;
@@ -362,7 +364,7 @@ function transformIntoSurvey(domains) {
 			]};
 		for(var j=0; j<domains[i].questions.length; j++) {
 			//console.log(domains[i].questions[j]);
-			questions.questions[0].rows.push({value: domains[i].questions[j].idquestion, text: domains[i].questions[j].Question})
+			questions.questions[0].rows.push({value: domains[i].questions[j].idquestion, text: domains[i].questions[j].Question, coef: domains[i].questions[j].CoeffID});
 		}
 		//console.log(questions);
 		//console.log(questions.questions[0]);
@@ -538,6 +540,14 @@ app.get('/newAudit.htm', function(req, res) {
 	res.sendFile(__dirname + '/Public/newAudit.htm');
 });
 
+app.get('/newAuditV2.htm', function(req, res) {
+	res.sendFile(__dirname + '/Public/newAuditV2.htm');
+});
+
+app.get('/loadAudit.htm', function(req, res) {
+	res.sendFile(__dirname + '/Public/loadAudit.htm');
+});
+
 app.get('/savedAudit.htm', function(req, res) {
 	res.sendFile(__dirname + '/Public/savedAudit.htm');
 });
@@ -564,6 +574,10 @@ app.get('/jquery-3.2.1.min.js', function(req, res) {
 
 app.get('/angular.min.js', function(req, res) {
 	res.sendFile(__dirname + '/Public/angular.min.js');
+});
+
+app.get('/angular.min.js.map', function(req, res) {
+	res.sendFile(__dirname + '/Public/angular.min.js.map');
 });
 
 app.get('/angular-route.js', function(req, res) {
