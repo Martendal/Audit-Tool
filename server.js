@@ -91,6 +91,78 @@ function getAllDomains(pool, callback)
 }
 
 
+/*************************************************************************************/
+/*					  				Sort all domains 	        			       	 */
+/*													      		   					 */
+/*  @Param domainID    : the reference domain ID                                     */
+/*	@Param domainsSrc  : the source array   										 */
+/*  @Param domainsDst  : the destination array                             		     */
+/*  @Param actualIndex : the index of the last added element (in destination array)  */
+/***************************** *******************************************************/
+function sortDomains (domainID, domainsSrc, domainsDst, actualIndex)
+{
+	for (var k = 0; k < domainsSrc.length; k++)
+	{
+		/*console.log("domID: ", domainID);
+		console.log("domSrcID: ", domainsSrc[k].iddomaine);
+		console.log("domSrcPID: ", domainsSrc[k].ParentID);*/
+		if(domainsSrc[k].ParentID == domainID)
+		{
+			domainsDst[actualIndex] = domainsSrc[k];
+			actualIndex++;
+			if (domainsSrc[k].NumOfChild > 0)
+			{
+				actualIndex = sortDomains (domainsSrc[k].iddomaine, domainsSrc, domainsDst, actualIndex)
+			}
+		}
+	}
+	return actualIndex;
+}
+
+
+/*************************************************************************************/
+/*					  				Sort all questions 	        			       	 */
+/*													      		   					 */
+/*  @Param questionID  : the reference domain ID                                     */
+/*	@Param questionSrc : the source array   										 */
+/*  @Param questionDst : the destination array                             		     */
+/*  @Param actualIndex : the index of the last added element (in destination array)  */
+/***************************** *******************************************************/
+function sortQuestions (questionID, questionsSrc, questionsDst, actualIndex)
+{
+	var questionsDstTMP = [];	// A temporary destination array
+
+	// We first get all the questions of that match with the given parent 
+	for (var k = 0; k < questionsSrc.length; k++)
+	{
+		if(questionsSrc[k].ParentID == questionID)
+		{
+			questionsDstTMP.push(questionsSrc[k]);
+		}
+	}
+
+	// Then we sort this array
+	questionsDstTMP.sort(function(a, b)
+	{
+		if (questionID == 0) return a.Numero - b.Numero;
+		return b.Numero - a.Numero;	// Question "b" should be put upper in the array because its apparition number is greater (and it will print it at the bottom of the parent question)
+	});
+
+	// Finally we construct the final destination array by adding one by one all the element of the fisrt array while inserted all the sub-questions
+	for (var k = 0; k < questionsDstTMP.length; k++)
+	{
+		
+		questionsDst[actualIndex] = questionsDstTMP[k];
+		actualIndex++;
+		if (questionsDstTMP[k].NumOfChild > 0)
+		{
+			actualIndex = sortQuestions (questionsDstTMP[k].idquestion, questionsSrc, questionsDst, actualIndex); // Stop the actual loop to get all the associated sub-questions
+		}
+	}
+	return actualIndex;
+}
+
+
 /*******************************************************************/
 /*					  Get a list of all domains 	               */
 /*													      		   */
@@ -136,25 +208,10 @@ function getAllDomainsQuestions(pool, domainId, callback)
 		else {
 			
 
-			/* Sorts the final question array by the domainId (ascending order) */
-			domainsAndQuestions.questions.sort(function(a, b)
-			{
-				return a[0].DomaineID - b[0].DomaineID;
-			});
-
-			/* Sorts each question array by the apparition number (ascending order) */
-			for (var i = 0; i < domainsAndQuestions.questions.length; i++) 
-			{
-				domainsAndQuestions.questions[i].sort(function(a, b)
-				{
-					if (a.ParentID > a.idquestion || (a.ParentID == b.ParentID && a.ParentID > 0)) return b.Numero - a.Numero;  // Question "a" has a parent that is lower in the array (it is then really important to put "a" after "b" to avoid problem with its creation view !!!). 
-																																// The second check (after the OR) is to respect the apprition number in case "a" and "b" have the same parent
-					return a.Numero - b.Numero	// Question "a" should be put upper in the array because its apparition number is lower
-				});
-			}
-
-
-			console.log("question: ", domainsAndQuestions.questions);
+			var quest = [];
+			var domainID = 0;
+			var temp = 0;
+			var tempDID = 0;
 
 			/* Sorts the final array by the domainId (ascending order) */
 			domainsAndQuestions.domains.sort(function(a, b)
@@ -162,8 +219,55 @@ function getAllDomainsQuestions(pool, domainId, callback)
 				return a.iddomaine - b.iddomaine;
 			});
 
-			//console.log("question , ", questions);
-			//console.log("domains: ", domainsAndQuestions.domains);
+
+			var doms = [];
+
+			for (var i = 0; i < domainsAndQuestions.domains.length; i++)
+			{
+				doms.push(domainsAndQuestions.domains[i]);
+			}
+
+			sortDomains(0, domainsAndQuestions.domains, doms, 0);
+
+			domainsAndQuestions.domains = doms;
+			//console.log("doms ", domainsAndQuestions.domains);
+
+			for (var i = 0; i < domainsAndQuestions.domains.length; i++)
+			{
+				if (domainsAndQuestions.domains[i].NumOfQuestions != 0)
+				{
+					for (var j = 0; j < domainsAndQuestions.questions.length; j++)
+					{
+						/*console.log("domainsAndQuestions.questions.length ", domainsAndQuestions.questions.length);
+						console.log("domainsAndQuestions.questions[j][0].DomainID ", domainsAndQuestions.questions[j][0].DomaineID);
+	
+						console.log("domainsAndQuestions.domains[i].iddomaine ", domainsAndQuestions.domains[i].iddomaine);*/
+						if(domainsAndQuestions.questions[j].length > 0)
+						{
+							if(domainsAndQuestions.questions[j][0].DomaineID == domainsAndQuestions.domains[i].iddomaine)
+							{
+								//console.log("domainsAndQuestions.questions[j] ", domainsAndQuestions.questions[j]);
+								quest.push(domainsAndQuestions.questions[j]);
+								break;
+							}
+						}
+					}
+				}
+				else quest.push([]);
+			}
+
+			domainsAndQuestions.questions = quest;
+
+			/* Sorts each question array by the apparition number (ascending order) */
+			for (var i = 0; i < domainsAndQuestions.questions.length; i++) 
+			{
+				quest = [];
+				sortQuestions (0, domainsAndQuestions.questions[i], quest, 0);
+
+				domainsAndQuestions.questions[i] = quest;
+			}
+
+			//console.log("Questions: ", domainsAndQuestions.questions);
 			callback(domainsAndQuestions);
 		}
 	});
@@ -493,19 +597,20 @@ app.get('/getCoefficients', function(req, res)
 	}
 });
 
-app.get('/addQuestion/:ParentID/:DomainID/:Question/:CoeffID/:Explication?', function (req, res)
+app.post('/addQuestion', function (req, res)
 {
 	if(res)
 	{
-		res.send(dbManager.addQuestion(pool, req.params.ParentID, req.params.DomainID, req.params.Question, req.params.Explication, req.params.CoeffID));
+		console.log(req.body);
+		res.send(dbManager.addQuestion(pool, req.body.arr[0], req.body.arr[1], req.body.arr[2], req.body.arr[3], req.body.arr[4], req.body.arr[5]));
 	}
 });
 
-app.get('/deleteQuestion/:QuestionID/:ParentID/:NumOfChild', function (req, res)
+app.get('/deleteQuestion/:QuestionID/:ParentID/:NumOfChild/:DomaineID', function (req, res)
 {
 	if(res)
 	{
-		res.send(dbManager.deleteQuestion(pool, req.params.QuestionID, req.params.ParentID, req.params.NumOfChild));
+		res.send(dbManager.deleteQuestion(pool, req.params.QuestionID, req.params.ParentID, req.params.NumOfChild, req.params.DomaineID));
 	}
 });
 
@@ -516,6 +621,32 @@ app.post('/editQuestion', function (req, res)
 		console.log(req.body);
 		res.send(dbManager.editQuestion(pool, req.body.arr[0], req.body.arr[1], req.body.arr[2], req.body.arr[3], req.body.arr[4],
 			                            req.body.arr[5], req.body.arr[6], req.body.arr[7]));
+	}
+});
+
+app.post('/addDomain', function (req, res)
+{
+	if(res)
+	{
+		console.log(req.body);
+		res.send(dbManager.addDomain(pool, req.body.arr[0], req.body.arr[1]));
+	}
+});
+
+app.post('/editDomain', function (req, res)
+{
+	if(res)
+	{
+		console.log(req.body);
+		res.send(dbManager.editDomain(pool, req.body.arr[0], req.body.arr[1], req.body.arr[2]));
+	}
+});
+
+app.get('/deleteDomain/:DomaineID', function (req, res)
+{
+	if(res)
+	{
+		res.send(dbManager.deleteDomain(pool, req.params.DomaineID));
 	}
 });
 
