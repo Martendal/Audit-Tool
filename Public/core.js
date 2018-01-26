@@ -1,6 +1,6 @@
 var auditTool = angular.module("auditTool", ["ngRoute"]);
 
-
+var lastSelectedMenu;
 //import { Component } from '@angular/core';
 
 
@@ -13,6 +13,10 @@ function menuController ($scope, $http) {
 			"href":"#!newaudit"
 		},
 		{
+			"menuName":"Load Audit",
+			"href":"#!loadaudit"
+		},
+		/*{
 			"menuName":"Saved Audits",
 			"href":"#!savedaudit"
 		},
@@ -23,9 +27,14 @@ function menuController ($scope, $http) {
 		{
 			"menuName":"Parameters",
 			"href":"#!parameters"
+		},*/
+		{
+			"menuName":"Manage Questions",
+			"href":"#!managedatabase"
 		}
 	];
-	$scope.selectedMenuName = "New Audit";
+
+	//$scope.selectedMenuName = "New Audit";
 	$scope.selectMenu = function(name) {
 		$scope.selectedMenuName = name;
 		console.log(name);
@@ -126,8 +135,8 @@ function createDomainList($http, questions) {
 	app.config(function($routeProvider) {
 		$routeProvider
 		.when("/newaudit", {
-			templateUrl : "newAudit.htm",
-			controller : "newAuditCtrl"
+			templateUrl : "newAuditV2.htm",
+			//controller : "newAuditCtrl"
 		})
 		.when("/savedaudit", {
 			templateUrl : "savedAudit.htm"
@@ -138,8 +147,14 @@ function createDomainList($http, questions) {
 		.when("/parameters", {
 			templateUrl : "parameters.htm"
 		})
+		.when("/managedatabase", {
+			templateUrl : "managedatabase.htm"
+		})
+		.when("/loadaudit", {
+			templateUrl : "loadAudit.htm"
+		})
 		.otherwise({
-			templateUrl : "newAudit.htm"
+			templateUrl : "newAuditV2.htm"
 		});
 	});
 

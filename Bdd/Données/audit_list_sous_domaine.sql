@@ -1,5 +1,3 @@
-CREATE DATABASE  IF NOT EXISTS `audit` /*!40100 DEFAULT CHARACTER SET utf8 */;
-USE `audit`;
 -- MySQL dump 10.13  Distrib 5.7.17, for Win64 (x86_64)
 --
 -- Host: localhost    Database: audit
@@ -25,11 +23,9 @@ DROP TABLE IF EXISTS `list_sous_domaine`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `list_sous_domaine` (
-  `idlist_sous_domaine` int(11) NOT NULL AUTO_INCREMENT COMMENT 'L''index dans la table',
   `idmain_domaine` int(11) NOT NULL COMMENT 'L''index du domaine contenant le sous-domaine',
   `idsous_domaine` int(11) NOT NULL COMMENT 'L''index du sous-domaine',
-  PRIMARY KEY (`idlist_sous_domaine`),
-  UNIQUE KEY `idlist_sous_domaine_UNIQUE` (`idlist_sous_domaine`)
+  PRIMARY KEY (`idmain_domaine`,`idsous_domaine`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Table contenant les sous-domaines de chaque domaine';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -39,6 +35,7 @@ CREATE TABLE `list_sous_domaine` (
 
 LOCK TABLES `list_sous_domaine` WRITE;
 /*!40000 ALTER TABLE `list_sous_domaine` DISABLE KEYS */;
+INSERT INTO `list_sous_domaine` VALUES (1,6),(1,8),(6,7);
 /*!40000 ALTER TABLE `list_sous_domaine` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -51,4 +48,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-12-14 17:38:50
+-- Dump completed on 2018-01-25  0:44:04

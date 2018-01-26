@@ -14,11 +14,17 @@
 	$.get('/getPackage/' + id, function(json) {
         console.log('json: ', json);
 	    Survey.Survey.cssType = "bootstrap";
-        Survey.defaultBootstrapCss.navigationButton = "btn btn-green";
+        //Survey.defaultBootstrapCss.navigationButton = "btn btn-green";
 
 		window.survey = new Survey.Model(json);
 
-
+        var myCss = {
+            matrix: {
+                root: "table table-striped"
+            },
+            navigationButton: "button btn-lg"
+        };
+       
         survey.onComplete.add(function(result) {
             //document.querySelector('#surveyResult').innerHTML = "result: " + JSON.stringify(result.data);
             var ctx = document.getElementById("chartResult");
@@ -26,7 +32,7 @@
             var means = [];
             var meansmax = [];
             var labels = [];
-            
+            console.log(json.pages);
             for (l=0; l<json.pages.length; l++) {
                 labels.push(json.pages[l].questions[0].title);
                 var meantmp = 0;
@@ -42,7 +48,6 @@
                         meantmp2 += val;
                     }
                     else if(val == 6) {
-                        //TODO: Calculate max and min means with extreme values of val for the "I don't know" option and create 2 other graphs on the radar graph
                         meantmp2 += 5;
                     }
                     else {
@@ -94,9 +99,9 @@
 
         });
 
-        $("#surveyElement").Survey({ 
-            model: survey 
-        });
+        $("#surveyElement").Survey({model: survey, css: myCss});
+        
+        $("#surveyResult").checked = true;
 	});
 
 </script>
