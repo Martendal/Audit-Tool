@@ -154,7 +154,7 @@ function createDomainList($http, questions) {
 			templateUrl : "loadAudit.htm"
 		})
 		.otherwise({
-			templateUrl : "newAudit.htm"
+			templateUrl : "newAuditV2.htm"
 		});
 	});
 

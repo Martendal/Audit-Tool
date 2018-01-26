@@ -699,6 +699,10 @@ app.get('/node_modules/chart.js/dist/Chart.js', function(req, res) {
 	res.sendFile(__dirname + '/node_modules/chart.js/dist/Chart.js');
 });
 
+app.get('/node_modules/jspdf/dist/jspdf.min.js', function(req, res) {
+	res.sendFile(__dirname + '/node_modules/jspdf/dist/jspdf.min.js');
+});
+
 app.get('/jquery-3.2.1.min.js', function(req, res) {
 	res.sendFile(__dirname + '/Public/jquery-3.2.1.min.js');
 });
@@ -721,6 +725,10 @@ app.get('/survey-jquery/survey.jquery.js', function(req, res) {
 
 app.get('/bootstrap.min.css', function(req, res) {
 	res.sendFile(__dirname + '/Public/bootstrap.min.css');
+});
+
+app.get('/bootstrap.min.css.map', function(req, res) {
+	res.sendFile(__dirname + '/Public/bootstrap.min.css.map');
 });
 
 app.get('/tether.min.js', function(req, res) {
