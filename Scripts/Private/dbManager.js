@@ -92,9 +92,10 @@ dbManager.prototype.addQuestion = function (pool, p_ParentID, p_DomainID, p_Ques
                     , function(err, res) 
                     {
                         if(err) throw err;
-                        else console.log("OK INSERT PAKAGE");
-                        console.log("res: ", res)
-                        for (var i = 0; i < res.length; i++) {
+                        else console.log("OK SELECT INSERT PAKAGE");
+                        console.log("res: ", res);
+                        for (var i = 0; i < res.length; i++)
+                        {
                             connection.query("INSERT INTO package_question_list (NomPackage, PackageID, QuestionID, DomaineID) " +
                                              "VALUE (" + mysql.escape(res[i].NomPackage) + "," + mysql.escape(res[i].PackageID) + "," + mysql.escape(last_index) + "," + mysql.escape(p_DomainID) + ") " +
                                              "ON DUPLICATE KEY UPDATE NomPackage = NomPackage"
@@ -104,6 +105,20 @@ dbManager.prototype.addQuestion = function (pool, p_ParentID, p_DomainID, p_Ques
                                 else console.log("OK INSERT PAKAGE");
                             });
                         }
+                    });
+
+                    // Add the question to the default package
+                    connection.query("SELECT PackageID FROM package_question_list WHERE NomPackage = \"Package par défaut\""
+                    , function(err, res) 
+                    {
+                        connection.query("INSERT INTO package_question_list (NomPackage, PackageID, QuestionID, DomaineID) " +
+                                         "VALUE ('Package par défaut'," + mysql.escape(res[0].PackageID) + "," + mysql.escape(last_index) + "," + mysql.escape(p_DomainID) + ") " +
+                                         "ON DUPLICATE KEY UPDATE NomPackage = NomPackage"
+                        , function(err, res)
+                        {
+                            if(err) throw err;
+                            else console.log("OK SELECT INSERT PAKAGE");
+                        });
                     });
                 });
 
