@@ -1,6 +1,8 @@
+CREATE DATABASE  IF NOT EXISTS `audit` /*!40100 DEFAULT CHARACTER SET utf8 */;
+USE `audit`;
 -- MySQL dump 10.13  Distrib 5.7.17, for Win64 (x86_64)
 --
--- Host: localhost    Database: audit
+-- Host: 127.0.0.1    Database: audit
 -- ------------------------------------------------------
 -- Server version	5.7.20-log
 
@@ -35,7 +37,6 @@ CREATE TABLE `list_sous_domaine` (
 
 LOCK TABLES `list_sous_domaine` WRITE;
 /*!40000 ALTER TABLE `list_sous_domaine` DISABLE KEYS */;
-INSERT INTO `list_sous_domaine` VALUES (1,6),(1,8),(6,7);
 /*!40000 ALTER TABLE `list_sous_domaine` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -48,4 +49,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-01-25  0:44:04
+-- Dump completed on 2018-01-27  2:57:28

@@ -7,6 +7,7 @@ var mysql = require('mysql');
 var async = require('async');
 var jquery = require('jquery');
 var dbManager = require('./Scripts/Private/dbManager.js');
+var packageManager = require('./Scripts/Private/packageManager.js');
 
 var domainsAndQuestions = {
 	domains: [],
@@ -568,6 +569,34 @@ app.get('/getPackage/:packageId', function(req, res) {
 	}
 });
 
+
+app.post('/modifyPackage', function (req, res)
+{
+	if(res)
+	{
+		console.log(req.body);
+		res.send(packageManager.modifyPackage(pool, req.body.arr[0], req.body.arr[1], req.body.arr[2]));
+	}
+});
+
+app.post('/addPackage', function (req, res)
+{
+	if(res)
+	{
+		console.log(req.body);
+		res.send(packageManager.addPackage(pool, req.body.arr[0]));
+	}
+});
+
+app.post('/deletePackage', function (req, res)
+{
+	if(res)
+	{
+		console.log(req.body);
+		res.send(packageManager.deletePackage(pool, req.body.arr[0]));
+	}
+});
+
 app.get('/Icones/:icon', function(req, res) {
 	res.sendFile(__dirname + '/Public/Icones/' + req.params.icon);
 }); 
@@ -663,8 +692,16 @@ app.get('/dbManager.js', function(req, res) {
 	res.sendFile(__dirname + '/Scripts/Public/dbManager.js');
 });
 
+app.get('/packageManager.js', function(req, res) {
+	res.sendFile(__dirname + '/Scripts/Public/packageManager.js');
+});
+
 app.get('/dashboard.css', function(req, res) {
 	res.sendFile(__dirname + '/Public/dashboard.css');
+});
+
+app.get('/manager.css', function(req, res) {
+	res.sendFile(__dirname + '/CSS/manager.css');
 });
 
 app.get('/newAudit.htm', function(req, res) {
@@ -693,6 +730,10 @@ app.get('/parameters.htm', function(req, res) {
 
 app.get('/managedatabase.htm', function(req, res) {
 	res.sendFile(__dirname + '/Public/managedatabase.htm');
+});
+
+app.get('/managepackage.htm', function(req, res) {
+	res.sendFile(__dirname + '/Public/managepackage.htm');
 });
 
 app.get('/node_modules/chart.js/dist/Chart.js', function(req, res) {

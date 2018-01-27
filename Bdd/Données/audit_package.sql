@@ -1,6 +1,8 @@
+CREATE DATABASE  IF NOT EXISTS `audit` /*!40100 DEFAULT CHARACTER SET utf8 */;
+USE `audit`;
 -- MySQL dump 10.13  Distrib 5.7.17, for Win64 (x86_64)
 --
--- Host: localhost    Database: audit
+-- Host: 127.0.0.1    Database: audit
 -- ------------------------------------------------------
 -- Server version	5.7.20-log
 
@@ -23,12 +25,12 @@ DROP TABLE IF EXISTS `package`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `package` (
-  `id` int(10) NOT NULL AUTO_INCREMENT COMMENT 'L''index du package',
+  `idpackage` int(10) NOT NULL AUTO_INCREMENT COMMENT 'L''index du package',
   `Nom` varchar(255) NOT NULL DEFAULT 'Package sans nom' COMMENT 'Le nom du package',
   `Category` varchar(45) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Table contenant les différents packages';
+  PRIMARY KEY (`idpackage`),
+  UNIQUE KEY `id_UNIQUE` (`idpackage`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COMMENT='Table contenant les différents packages';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -37,6 +39,7 @@ CREATE TABLE `package` (
 
 LOCK TABLES `package` WRITE;
 /*!40000 ALTER TABLE `package` DISABLE KEYS */;
+INSERT INTO `package` VALUES (1,'Package par défaut',NULL);
 /*!40000 ALTER TABLE `package` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -49,4 +52,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-01-25  0:44:03
+-- Dump completed on 2018-01-27  2:57:28

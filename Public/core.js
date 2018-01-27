@@ -29,8 +29,12 @@ function menuController ($scope, $http) {
 			"href":"#!parameters"
 		},*/
 		{
-			"menuName":"Manage Questions",
+			"menuName":"Manage Database",
 			"href":"#!managedatabase"
+		},
+		{
+			"menuName":"Manage Package",
+			"href":"#!managepackage"
 		}
 	];
 
@@ -149,6 +153,9 @@ function createDomainList($http, questions) {
 		})
 		.when("/managedatabase", {
 			templateUrl : "managedatabase.htm"
+		})
+		.when("/managepackage", {
+			templateUrl : "managepackage.htm"
 		})
 		.when("/loadaudit", {
 			templateUrl : "loadAudit.htm"
