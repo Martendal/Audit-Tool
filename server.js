@@ -482,13 +482,59 @@ function transformIntoSurvey(domains) {
 }
 
 
+function transformIntoSurvey2() {
+	var json = {pages:[]};
+
+	//console.log(domains);
+	for(var i=0; i < domainsAndQuestions.domains.length; i++) {
+		var questions = {
+			questions: [
+				{
+					type:"matrix",
+					name:domainsAndQuestions.domains[i].Nom+i,
+					title: domainsAndQuestions.domains[i].Nom,
+					iddomaine: domainsAndQuestions.domains[i].iddomaine,
+					ParentID: domainsAndQuestions.domains[i].ParentID,
+					columns: [
+						{type: "radio", value: 1, text:"1", id: 1},
+						{type: "radio", value: 2, text:"2", id: 2},
+						{type: "radio", value: 3, text:"3", id: 3},
+						{type: "radio", value: 4, text:"4", id: 4},
+						{type: "radio", value: 5, text:"5", id: 5},
+						{type: "radio", value: 6, text:"Don't know", id: 6},
+						{type: "radio", value: 7, text:"Not concerned", id: 7},
+						{type: "radio", value: 8, text:"Oui", id: 8},
+						{type: "radio", value: 9, text:"Non", id: 9},
+					],
+					rows:[]
+				}
+			]};
+		for(var j=0; j < domainsAndQuestions.questions[i].length; j++) {
+			//console.log(domains[i].questions[j]);
+			questions.questions[0].rows.push({value: domainsAndQuestions.questions[i][j].idquestion, ParentID: domainsAndQuestions.questions[i][j].ParentID, NumOfChild:domainsAndQuestions.questions[i][j].NumOfChild, text: domainsAndQuestions.questions[i][j].Question, coef: domainsAndQuestions.questions[i][j].CoeffID, answer: 6});
+		}
+		//console.log(questions);
+		//console.log(questions.questions[0]);
+		json.pages.push(questions);
+
+	}
+	//console.log(json.pages[0].questions[0]);
+	//console.log(json);
+	return json;
+}
+
+
+
+
+
 function createSurveyFromQuestions(pool, questions, callback) {
 	try{
+		callback(transformIntoSurvey2());
 		//console.log("questions: ", questions);
-		associateQuestionsToDomainName(pool, questions, function(sortedQuestions) {
+		/*associateQuestionsToDomainName(pool, questions, function(sortedQuestions) {
 			//console.log("sortedquestions: ", sortedQuestions);
 			callback(transformIntoSurvey(sortedQuestions));
-		});
+		});*/
 	}
 	catch(e) {
 		console.log(e);
@@ -561,7 +607,7 @@ app.get('/getPackage/:packageId', function(req, res) {
 		getAllQuestionsIdByPackageId(pool, req.params.packageId, function(q) {
 			getAllQuestionsById(pool, q, function(questions){
 				createSurveyFromQuestions(pool, questions, function(survey) {
-					//console.log(survey);
+					console.log(survey.pages[0]);
 					res.send(survey);
 				});
 			});
@@ -694,6 +740,10 @@ app.get('/dbManager.js', function(req, res) {
 
 app.get('/packageManager.js', function(req, res) {
 	res.sendFile(__dirname + '/Scripts/Public/packageManager.js');
+});
+
+app.get('/audit.js', function(req, res) {
+	res.sendFile(__dirname + '/Scripts/Public/audit.js');
 });
 
 app.get('/dashboard.css', function(req, res) {
