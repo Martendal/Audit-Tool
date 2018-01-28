@@ -6,60 +6,33 @@
     <div class="sv_bootstrap_css">
     	<div class="sv_custom_header"></div>
     	<div class="sv_container" id="questionnaire">
-    		<div class="panel-heading card-header">
+    		<div class="panel-body card-block">
+    			<div class="panel-heading card-header">
     			<h3></h3>
+    		</div>
+    		<link href="manager.css" rel="stylesheet">
+			<link href="auditStyle.css" rel="stylesheet">
+
+			<script type="text/javascript" src="audit.js"></script>
+    		<div class="panel-body card-block">
+    			
+    			<div id="DomainQuestions">
+					<table id="MainTable">
+				
+					</table>
+				</div>
+
+    			<div id="questionnaireButtons" class="panel-footer card-footer">
+    				<input id="graphBtn" type="button" class="buttonQuestionnaire" value="View Graph">
+    				<a id="saveAudit" class="buttonQuestionnaire" onclick="updateJsonDownloader()">Save Audit</a>
+    			</div>
     		</div>
     		
     		<div id="uploadBtn">
     			<input id="userJson" type="file" name="JSONfile" onchange="loadJson()">
     		</div>
-    		
-
-
-    		<div class="panel-body card-block">
-    			<div class="sv_qstn" style="width: 100%;">
-    				<div>
-    					<h5>
-    						<span id="domainName"></span>
-    					</h5>
-    				</div>
-    				<div class="">
-    					<fieldset>
-    						<table id="questionTable" class="table table-striped">
-    							<thead>
-    								<tr>
-    									<td></td>
-    									<th><span>1</span></th>
-    									<th><span>2</span></th>
-    									<th><span>3</span></th>
-    									<th><span>4</span></th>
-    									<th><span>5</span></th>
-    									<th><span>I don't know</span></th>
-    									<th><span>Not concerned</span></th>
-    								</tr>
-    							</thead>
-    							<tbody id="tableBody">
-    								
-    							</tbody>
-    						</table>
-    					</fieldset>
-    				</div>
-    			</div>
-    			<div id="questionnaireButtons" class="panel-footer card-footer">
-    				<input id="btnPreviousPage" type="button" class="buttonQuestionnaire" onclick="previousPage()" value="Previous">
-    				<input id="btnNextPage" type="button" class="buttonQuestionnaire" onclick="nextPage()" value="Next">
-    				<a id="saveAudit" class="buttonQuestionnaire">Save Audit</a>
-    				
-
-    			</div>
-
-    		</div>
-
-    		
-
     	</div>
     </div>
-
     
 
     <input type="text" value="Company: " id="inputName" hidden>
@@ -70,287 +43,3 @@
     </div>
     <div id="editor"></div>
 </div>
-
-
-
-<style type="text/css">
-	.buttonQuestionnaire {
-	  background: #3498db;
-	  background-image: -webkit-linear-gradient(top, #3498db, #2980b9);
-	  background-image: -moz-linear-gradient(top, #3498db, #2980b9);
-	  background-image: -ms-linear-gradient(top, #3498db, #2980b9);
-	  background-image: -o-linear-gradient(top, #3498db, #2980b9);
-	  background-image: linear-gradient(to bottom, #3498db, #2980b9);
-	  -webkit-border-radius: 6;
-	  -moz-border-radius: 6;
-	  border-radius: 6px;
-	  -webkit-box-shadow: 0px 1px 3px #666666;
-	  -moz-box-shadow: 0px 1px 3px #666666;
-	  box-shadow: 0px 1px 3px #666666;
-	  font-family: Arial;
-	  color: #ffffff;
-	  font-size: 20px;
-	  padding: 10px 20px 10px 20px;
-	  text-decoration: none;
-	}
-
-	.buttonQuestionnaire:hover {
-	  background: #3cb0fd;
-	  background-image: -webkit-linear-gradient(top, #3cb0fd, #3498db);
-	  background-image: -moz-linear-gradient(top, #3cb0fd, #3498db);
-	  background-image: -ms-linear-gradient(top, #3cb0fd, #3498db);
-	  background-image: -o-linear-gradient(top, #3cb0fd, #3498db);
-	  background-image: linear-gradient(to bottom, #3cb0fd, #3498db);
-	  text-decoration: none;
-	}
-
-	#saveAudit {
-		color: white;
-		background: #5fd553;
-		padding-top: 15px;
-		padding-bottom: 15px;
-	}
-	#saveAudit:hover {
-		color: white;
-		background: #48a83e;
-		padding-top: 15px;
-		padding-bottom: 15px;
-		color: white;
-	}
-</style>
-
-
-<script type="text/javascript">
-	var id = '1';
-	var page = 0;
-	var pagemax = 0;
-	var json = 0;
-	var coef = 0;
-
-
-
-	//Refresh the page to the next one
-	function nextPage() {
-		if(page < pagemax-1){
-			page++;
-			$("#tableBody").empty();
-			pageLoader(page, json, coef);
-		}
-		
-	}
-
-	//Refresh the page to the previous one
-	function previousPage() {
-		if(page > 0){
-			page--;
-			$("#tableBody").empty();
-			pageLoader(page, json, coef);
-		}
-	}
-
-	//Used to download the JSON file
-	function updateJsonDownloader(json) {
-		var data = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(json));
-		$("#saveAudit").attr("href", "data:" + data);
-		$("#saveAudit").attr("download", 'audit.json');
-	}
-
-	//Write the user's answers dynamically in the JSON file
-	function saveRadioChoice(questionNumber, radioValue) {
-		var q = $.grep(json.pages[page].questions[0].rows, function(e){ return e.value == questionNumber; });
-		if(q) {
-			var index = $.map(json.pages[page].questions[0].rows, function(obj, i) {
-				if(obj.value == q[0].value) {
-					return i;
-				}
-			});
-			index = index[0];
-			json.pages[page].questions[0].rows[index].answer = radioValue;
-		}
-	}
-
-
-	//Generates the graph when the associated button is pressed
-	function generateGraph(json) {
-		$("#questionnaire").hide();
-		$("#toPdf").attr("hidden", false);
-		$("#inputName").attr("hidden", false);
-		$("#chartDiv").attr("hidden", false);
-
-		var ctx = document.getElementById("chartResult");
-	    var means = [];
-	    var meansmax = [];
-	    var labels = [];
-	    for (l=0; l<json.pages.length; l++) {
-	        labels.push(json.pages[l].questions[0].title);
-	        var meantmp = 0;
-	        var meantmp2 = 0;
-	        var name = json.pages[l].questions[0].name;
-	        var val = 0;
-	        var currentCoef = 0;
-	        var len = json.pages[l].questions[0].rows.length;
-	        for(r=0; r<json.pages[l].questions[0].rows.length; r++) {
-	            val = json.pages[l].questions[0].rows[r].answer;//The user's answer
-	            currentCoef = coef[json.pages[l].questions[0].rows[r].coef - 1].Valeur + 1; //Get the associated coefficient value imported from DB
-
-	            //The answer is between 1 and 5
-	            if(val < 6){
-	                meantmp += val*currentCoef;
-	                meantmp2 += val*currentCoef;
-	            }
-
-	            //The answer is "I don't know", so we have to consider extremes values
-	            else if(val == 6) {
-	                meantmp2 += 5*currentCoef;
-	            }
-
-	            //The answer is "not concerned", so we don't consider this question in the mean calculation
-	            else {
-	                len --;
-	            }
-	        }
-
-	        //Calculation of the means to use in the graph
-	        meantmp = meantmp/len;
-	        meantmp2 = meantmp2/len;
-	        means.push(meantmp);
-	        meansmax.push(meantmp2);
-	    }
-
-	    //Useful for the PDF generation to avoid having a black background
-	    Chart.plugins.register({
-		  beforeDraw: function(chartInstance) {
-		    var ctx = chartInstance.chart.ctx;
-		    ctx.fillStyle = "white";
-		    ctx.fillRect(0, 0, chartInstance.chart.width, chartInstance.chart.height);
-		  }
-		});
-
-	    //Creation of the chart
-	    var myChart = new Chart(ctx, {
-	        type: 'radar',
-	        data: {
-	            labels: labels,
-	            datasets: [{
-	                label: 'Minimum security of the company',
-	                data: means,
-	                backgroundColor: 'rgba(14,43,211,0.2)'              
-	            },{
-	                label: 'Maximum security of the company',
-	                data: meansmax,
-	                backgroundColor: 'rgba(111,89,122,0.2)'              
-	            }]
-	        },
-	        options: {
-	            scale: {
-	                
-	                    ticks: {
-	                        min:0,
-	                        max:5
-	                    }
-	                
-	            }
-	        }
-	    });
-	}
-
-
-
-
-	//Shows the right page of the questionnaire
-	function pageLoader(page, json, coef) {
-        var tbody = $("#tableBody");
-        for(var line=0; line<json.pages[page].questions[0].rows.length; line++) { //Iteration over each question of the domain
-        	var question = json.pages[page].questions[0].rows[line];
-
-        	//Creating the html components dynamically
-        	var tr = document.createElement("tr");
-        	var td = document.createElement("td");
-        	var q = question.text;
-        	var domain = json.pages[page].questions[0].title;
-       		$("#domainName").text(domain);
-        	td.append(q);
-        	tr.append(td);
-        	for (var i=1; i<8; i++) {
-        		td = document.createElement("td");
-        		var label = document.createElement("label");
-        		$(label).addClass("sv_q_m_label");
-        		var input = document.createElement("input");
-        		input.type = "radio";
-        		input.name = domain + line;
-        		input.value = question.value;
-        		$(input).attr("onclick", "saveRadioChoice("+question.value+","+i+")");
-        		var span1 = document.createElement("span");
-        		var span2 = document.createElement("span");
-        		$(span1).addClass("circle");
-        		$(span2).addClass("check");
-
-        		//If there is a saved answer in the json
-        		if(question.answer == i) {
-        			input.checked = true;
-        		}
-        		label.append(input, span1, span2);
-        		td.append(label);
-        		tr.append(td);
-        	}
-        	tbody.append(tr);
-
-        }
-
-        //Handles the graph generator button
-        if(page == pagemax-1) {
-        	var graphBtn = document.createElement("input");
-        	graphBtn.type = "button";
-        	$(graphBtn).addClass("buttonQuestionnaire");
-        	$(graphBtn).attr("id", "graphBtn");
-        	$(graphBtn).attr("onclick", "generateGraph(json)");
-        	$(graphBtn).attr("value", "View Graph");
-        	$("#questionnaireButtons").append(graphBtn);
-        	$("#btnNextPage").hide();
-        }
-        else{
-        	$("#graphBtn").remove();
-        	$("#btnNextPage").show();
-        }
-
-
-        updateJsonDownloader(json);
-
-	}
-
-	//Creates a PDF file containing the resulting graph
-	function generatePDF() {
-		var doc = new jsPDF();
-		var canvas = document.querySelector('#chartResult');
-		doc.setFontSize(30);
-		doc.setFont("arial");
-		doc.text(70, 15, $('#companyName').text());
-		var canvasImg = canvas.toDataURL("image/png", 1.0);
-		doc.addImage(canvasImg, 'PNG', 10, 70, 200, 200 );
-		doc.save('audit-result.pdf');
-	}
-
-	//Gets the JSON file chosen by the user
-	function loadJson() {
-		$.get('/getCoefficients', function(coef_imported) {
-			coef = coef_imported;
-			var userJson = $('#userJson').get(0).files[0];
-			if(userJson) {
-				var reader = new FileReader();
-				reader.readAsText(userJson, "UTF-8");
-				reader.onload = function (evt) {
-					json = $.parseJSON(evt.target.result);
-					pagemax = json.pages.length;
-					pageLoader(page, json, coef);
-				}
-				reader.onerror = function(evt) {
-					alert("File not found ! ");
-				}
-			}
-		});
-	}
-
-	$('#inputName').keyup(function() {
-	    $('#companyName').html($(this).val());
-	});
-</script>

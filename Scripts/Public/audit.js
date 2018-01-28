@@ -1,50 +1,104 @@
 var id = '1';
-	var page = 0;
-	var pagemax = 0;
-	var json = 0;
-	var coef = 0;
+var page = 0;
+var pagemax = 0;
+var json = 0;
+var coef = 0;
 
-	//Load the json from the server
-	function getJson(id) {
-		$.get('/getCoefficients', function(coef_imported) {
-			$.get('/getPackage/' + id, function(json_imported) {
-				json = json_imported;
-				renderView (json);
+//Load the json from the server
+function getJson(id) {
+	$.get('/getCoefficients', function(coef_imported) {
+		$.get('/getPackage/' + id, function(json_imported) {
+			json = json_imported;
+			renderView (json);
 
-			});
-			coef = coef_imported;
-
-			var graphBtn = document.getElementById("graphBtn");
-        	graphBtn.setAttribute("onclick", "generateGraph(json)");
 		});
-	}
+		coef = coef_imported;
 
-	//Refresh the page to the next one
-	function nextPage() {
-		if(page < pagemax-1){
-			page++;
-			$("#tableBody").empty();
-			pageLoader(page, json, coef);
+		var graphBtn = document.getElementById("graphBtn");
+        graphBtn.setAttribute("onclick", "generateGraph(json)");
+	});
+}
+
+
+// Used to download the JSON file
+function updateJsonDownloader() {
+	var data = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(json));
+	$("#saveAudit").attr("href", "data:" + data);
+	$("#saveAudit").attr("download", 'audit.json');
+}
+
+
+
+/***********************************************************************************/
+/*         Get the total number of child of the given question / domain            */
+/*                                                                                 */
+/*  @Param questionID : the index where the question is located in retrieves data  */
+/*  @Param domainID   : the index where the domain is located in retrieves data    */
+/***********************************************************************************/
+function getTotalNumOfChild (questionID, domainID, json)
+{
+	numOfTotalChild = 0;
+	if (questionID != null) // We want to know the number of children of a question
+	{
+		numOfTotalChild = json.domains[domainID].questions[questionID].NumOfChild;
+		for (var i = questionID + 1; i < json.domains[domainID].questions.length; i++)
+		{
+			if (json.domains[domainID].questions[i].NumOfChild > 0 && json.domains[domainID].questions[i].ParentID == json.domains[domainID].questions[questionID].idquestion) 
+				numOfTotalChild += getTotalNumOfChild (i, domainID, json);
 		}
-		
 	}
-
-	//Refresh the page to the previous one
-	function previousPage() {
-		if(page > 0){
-			page--;
-			$("#tableBody").empty();
-			pageLoader(page, json, coef);
+	else  // We want to know the number of children of a domain
+	{
+		numOfTotalChild = json.domains[domainID].NumOfChild;
+		for (var i = domainID + 1; i < json.domains.length; i++)
+		{
+			if (json.domains[i].NumOfChild > 0 && json.domains[i].ParentID == json.domains[domainID].iddomaine)
+				numOfTotalChild += getTotalNumOfChild (null, i, json);
 		}
 	}
+	return numOfTotalChild;
+}
 
-	//Used to download the JSON file
-	function updateJsonDownloader(json) {
-		var data = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(json));
-		$("#saveAudit").attr("href", "data:" + data);
-		$("#saveAudit").attr("download", 'audit.json');
+/***********************************************************************************/
+/*              Regroup all the sub-domains into their main domain                 */
+/***********************************************************************************/
+function regroupSubDomainAndMainDomain ()
+{
+	var numOfTotalChild;
+	var studiedJSON = JSON.parse(JSON.stringify(json)); // Create a clone of the original json file
+	console.log (studiedJSON);
+	var j;
+
+	// Check and regroup the sub-domains
+	for (var i = 0; i < studiedJSON.domains.length; i++)
+	{
+		if(studiedJSON.domains[i].NumOfChild > 0) // This domain has sub-domains
+		{
+			numOfTotalChild = getTotalNumOfChild (null, i, studiedJSON);
+			j = 1;
+			while (j <= numOfTotalChild)
+			{
+				studiedJSON.domains[i].questions = studiedJSON.domains[i].questions.concat(studiedJSON.domains[i+j].questions); // Concat the question of the sub-domain with the main domain one's
+				j++;
+			}
+			studiedJSON.domains.splice (i+1, numOfTotalChild); // Deletes the sub-domains in order to avoid their apparition on the graph
+		}
+
+		// Deletes all the questions that have a parent set to "no"
+		for (var k = 0; k < studiedJSON.domains[i].questions.length; k++)
+		{
+			if (studiedJSON.domains[i].questions[k].answer == 9)
+			{
+				numOfTotalChild = getTotalNumOfChild (k, i, studiedJSON);
+				console.log (numOfTotalChild);
+				studiedJSON.domains[i].questions.splice (k, numOfTotalChild+1);
+				console.log (studiedJSON);
+				k--;
+			}
+		}
 	}
-
+	return studiedJSON;
+}
 
 
 	//Generates the graph when the associated button is pressed
@@ -54,24 +108,32 @@ var id = '1';
 		$("#inputName").attr("hidden", false);
 		$("#chartDiv").attr("hidden", false);
 
+		var studiedJSON = regroupSubDomainAndMainDomain();
+		//console.log (json);
+
 		var ctx = document.getElementById("chartResult");
 	    var means = [];
 	    var meansmax = [];
 	    var labels = [];
-	    for (l=0; l<json.pages.length; l++) {
-	        labels.push(json.pages[l].questions[0].title);
+	    for (l = 0; l < studiedJSON.domains.length; l++)
+	    {
+	        labels.push(studiedJSON.domains[l].title);
 	        var meantmp = 0;
 	        var meantmp2 = 0;
-	        var name = json.pages[l].questions[0].name;
+	        var name = studiedJSON.domains[l].name;
 	        var val = 0;
 	        var currentCoef = 0;
-	        var len = json.pages[l].questions[0].rows.length;
-	        for(r=0; r<json.pages[l].questions[0].rows.length; r++) {
-	            val = json.pages[l].questions[0].rows[r].answer;//The user's answer
-	            currentCoef = coef[json.pages[l].questions[0].rows[r].coef - 1].Valeur + 1; //Get the associated coefficient value imported from DB
+	        var len = studiedJSON.domains[l].questions.length;
+
+	        for(r = 0; r < studiedJSON.domains[l].questions.length; r++)
+	        {
+	        	console.log(studiedJSON.domains[l].questions[r]);
+	            val = studiedJSON.domains[l].questions[r].answer;//The user's answer
+	            currentCoef = coef[studiedJSON.domains[l].questions[r].coef - 1].Valeur + 1; //Get the associated coefficient value imported from DB
 
 	            //The answer is between 1 and 5
-	            if(val < 6){
+	            if(val < 6)
+	            {
 	                meantmp += val*currentCoef;
 	                meantmp2 += val*currentCoef;
 	            }
@@ -81,9 +143,10 @@ var id = '1';
 	                meantmp2 += 5*currentCoef;
 	            }
 
-	            //The answer is "not concerned", so we don't consider this question in the mean calculation
-	            else {
-	                len --;
+	            //The answer is "not concerned / yes / no", so we don't consider this question in the mean calculation
+	            else 
+	            {
+	                len--;
 	            }
 	        }
 
@@ -133,70 +196,6 @@ var id = '1';
 	}
 
 
-
-
-	//Shows the right page of the questionnaire
-	function pageLoader(page, json, coef) {
-        var tbody = $("#tableBody");
-        for(var line=0; line<json.pages[page].questions[0].rows.length; line++) { //Iteration over each question of the domain
-        	var question = json.pages[page].questions[0].rows[line];
-        	
-
-        	//Creating the html components dynamically
-        	var tr = document.createElement("tr");
-        	var td = document.createElement("td");
-        	var q = question.text;
-        	var domain = json.pages[page].questions[0].title;
-       		$("#domainName").text(domain);
-        	td.append(q);
-        	tr.append(td);
-        	for (var i=1; i<8; i++) {
-        		td = document.createElement("td");
-        		var label = document.createElement("label");
-        		$(label).addClass("sv_q_m_label");
-        		var input = document.createElement("input");
-        		input.type = "radio";
-        		input.name = domain + line;
-        		input.value = question.value;
-        		$(input).attr("onclick", "saveRadioChoice("+question.value+","+i+")");
-        		var span1 = document.createElement("span");
-        		var span2 = document.createElement("span");
-        		$(span1).addClass("circle");
-        		$(span2).addClass("check");
-
-        		//If there is a saved answer in the json
-        		if(question.answer == i) {
-        			input.checked = true;
-        		}
-        		label.append(input, span1, span2);
-        		td.append(label);
-        		tr.append(td);
-        	}
-        	tbody.append(tr);
-
-        }
-
-        //Handles the graph generator button
-        if(page == pagemax-1) {
-        	var graphBtn = document.createElement("input");
-        	graphBtn.type = "button";
-        	$(graphBtn).addClass("buttonQuestionnaire");
-        	$(graphBtn).attr("id", "graphBtn");
-        	$(graphBtn).attr("onclick", "generateGraph(json)");
-        	$(graphBtn).attr("value", "View Graph");
-        	$("#questionnaireButtons").append(graphBtn);
-        	$("#btnNextPage").hide();
-        }
-        else{
-        	$("#graphBtn").remove();
-        	$("#btnNextPage").show();
-        }
-
-
-        updateJsonDownloader(json);
-	}
-
-
 	//Creates a PDF file containing the resulting graph
 	function generatePDF() {
 		var doc = new jsPDF();
@@ -230,65 +229,21 @@ var id = '1';
 
 
 
-/*{ questions:
-   [ { type: 'matrix',
-       name: 'Sécurité physique0',
-       title: 'Sécurité physique',
-       columns: [Array],
-       rows: [Array] } ] }*/
-
-
-
 var MainTable = document.getElementById('MainTable'); // The table containing all the inforamtion (domain, questions, checkBoxs, ...)
 var actualAction;    // The actual in progress action (add, edit, ...)
 var packageID;
 
 
-/**********************************************************************************/
-/*                  Retrieve the domains and questions from the database          */
-/**********************************************************************************/
-/*var domainsAndQuestions;
-var packages;
-var packageQuestions
-$.get('/getDomains', array = function(c_domainsAndQuestions)
-{
-	domainsAndQuestions = c_domainsAndQuestions;
-
-	console.log("Domains: ", domainsAndQuestions.domains);
-	console.log("Questions: ", domainsAndQuestions.questions);
-	
-
-	// Add the different domains as tab
-	for (var i = 0; i < domainsAndQuestions.domains.length; i++) 
-	{
-		if (domainsAndQuestions.domains[i].ParentID == 0)
-		{	
-			printDomains (i);
-		}
-	}
-});
-*/
-
 function renderView (json)
 {
 	console.log("json:", json);
 	// Add the different domains as tab
-	for (var i = 0; i < json.pages.length; i++) 
+	for (var i = 0; i < json.domains.length; i++) 
 	{	
-		if (parseInt(json.pages[i].questions[0].ParentID) == 0)
+		if (parseInt(json.domains[i].ParentID) == 0)
 		{	
 			printDomains (i, json);
 		}
-	}
-}
-
-
-function getQuestionIDOfiquestion (idquestion, domainID)
-{
-	if (idquestion == 0) return -1;
-	for (var i = 0; domainsAndQuestions.questions[domainID].length; i++)
-	{
-		if(domainsAndQuestions.questions[domainID][i].idquestion == idquestion) return i;
 	}
 }
 
@@ -300,41 +255,17 @@ function getQuestionIDOfiquestion (idquestion, domainID)
 /********************************************************/
 function printDomains (selectedDomainID, json)
 {
-
-/*	// Delete all the present rows
-	while (MainTable.hasChildNodes()) 
-	{
-		MainTable.removeChild(MainTable.lastChild);
-	}
-*/
-
 	/* Create the main domain body */
 	var divDomain;
 	divDomain = document.createElement("div");
 	divDomain.className = "custom-select-trigger opened";
-	divDomain.appendChild(document.createTextNode(json.pages[selectedDomainID].questions[0].title));
-	divDomain.setAttribute("id", "div Domain Name " + json.pages[selectedDomainID].questions[0].iddomaine);
-	divDomain.setAttribute("onClick", "toggleOpenedDomain (" + json.pages[selectedDomainID].questions[0].iddomaine + ")");
-
-	/* Add a checkBox */
-	/*var checkBox = document.createElement("input");
-	var label = document.createElement("label");
-	var span = document.createElement("span");
-	checkBox.type = "checkbox";
-	span.setAttribute("class", "squaredFour");
-	label.setAttribute("class", "squaredFour");
-	label.id = "LC Domain " + domainsAndQuestions.domains[selectedDomainID].iddomaine;
-	label.setAttribute("onClick", "toggleCheckBox()");
-	checkBox.id = "CheckBox Domain " + domainsAndQuestions.domains[selectedDomainID].iddomaine;
-	checkBox.value = selectedDomainID;
-	span.appendChild(checkBox);
-	span.appendChild(label);
-	divDomain.appendChild(span);*/
-	/*------------*/
+	divDomain.appendChild(document.createTextNode(json.domains[selectedDomainID].title));
+	divDomain.setAttribute("id", "div Domain Name " + json.domains[selectedDomainID].iddomaine);
+	divDomain.setAttribute("onClick", "toggleOpenedDomain (" + json.domains[selectedDomainID].iddomaine + ")");
 
 
 	var tbody = document.createElement("tbody");
-	tbody.setAttribute("id", "Domain " + json.pages[selectedDomainID].questions[0].iddomaine);	
+	tbody.setAttribute("id", "Domain " + json.domains[selectedDomainID].iddomaine);	
 	tbody.setAttribute("class", "custom-tbody opened");
 	MainTable.appendChild(divDomain);
 	MainTable.appendChild(tbody);
@@ -401,24 +332,24 @@ function printDomains (selectedDomainID, json)
 	domainIDs.push(selectedDomainID); // Put the Main domain ID into the involved IDs array
 
 	// Add all the sub-domains (and their children) to the main domain body 
-	for (var i = selectedDomainID; i < json.pages.length; i++)
+	for (var i = selectedDomainID; i < json.domains.length; i++)
 	{
-		parentDomain = document.getElementById("Domain " + json.pages[i].questions[0].ParentID);
+		parentDomain = document.getElementById("Domain " + json.domains[i].ParentID);
 		if (parentDomain != null)
 		{
 			/*console.log("added domainID: ", domainsAndQuestions.domains[i].iddomaine);
 			console.log("added at index: ", -1);*/
 			row = parentDomain.insertRow(-1);													// Insert a row at the last position
-			row.setAttribute("id", "Row Domain " + json.pages[i].questions[0].iddomaine);	// Set the ID of the row
+			row.setAttribute("id", "Row Domain " + json.domains[i].iddomaine);	// Set the ID of the row
 			cell = row.insertCell(0)															// Insert a cell into the previous create row
 			cell.setAttribute("colspan", "8");
 			divDomain = document.createElement("div");											// Create a div element
 			divDomain.className = "custom-select-trigger opened";								// Set the classes of the div element
-			divDomain.setAttribute("id", "div Domain Name " + json.pages[i].questions[0].iddomaine);
-			divDomain.setAttribute("onClick", "toggleOpenedDomain (" + json.pages[i].questions[0].iddomaine + ")");
-			divDomain.appendChild(document.createTextNode(json.pages[i].questions[0].title));	// Add a text to the div element
+			divDomain.setAttribute("id", "div Domain Name " + json.domains[i].iddomaine);
+			divDomain.setAttribute("onClick", "toggleOpenedDomain (" + json.domains[i].iddomaine + ")");
+			divDomain.appendChild(document.createTextNode(json.domains[i].title));	// Add a text to the div element
 			tbody = document.createElement("tbody");											// Create the body of the new domain
-			tbody.setAttribute("id", "Domain " + json.pages[i].questions[0].iddomaine);		// Set the id of the new body
+			tbody.setAttribute("id", "Domain " + json.domains[i].iddomaine);		// Set the id of the new body
 			tbody.setAttribute("class", "custom-tbody opened");
 			tbody.setAttribute("style", "background-color: hsla(" + (209+(20*i))%360 + ", 30%, 60%, 0.7)");
 			cell.appendChild(divDomain);														// Add the div element to the cell
@@ -475,22 +406,6 @@ function printDomains (selectedDomainID, json)
 			th.setAttribute("class", "header");
 			th.appendChild(document.createTextNode("Not concerned"));
 			cell.appendChild(th);
-
-			/* Add a checkBox */
-			/*checkBox = document.createElement("input");
-			label = document.createElement("label");
-			span = document.createElement("span");
-			checkBox.type = "checkbox";
-			span.setAttribute("class", "squaredFour");
-			label.setAttribute("class", "squaredFour");
-			label.id = "LC Domain " + domainsAndQuestions.domains[i].iddomaine;
-			label.setAttribute("onClick", "toggleCheckBox()");
-			checkBox.id = "CheckBox Domain " + domainsAndQuestions.domains[i].iddomaine;
-			checkBox.value = i;
-			span.appendChild(checkBox);
-			span.appendChild(label);
-			divDomain.appendChild(span);*/
-			/*------------*/
 		}
 	}
 
@@ -501,11 +416,11 @@ putQuestionInForm(json, domainIDs); // Print the questions associated to all the
 }
 
 
-/*****************************************************************************/
-/*           Prints the elements to edit a domain of the database            */
-/*                                                                           */
+/*******************************************************************************/
+/*           Prints the elements to edit a domain of the database              */
+/*                                                                             */
 /*  @Param elementTriggerID : the id of the checkBox that launch the function  */
-/*****************************************************************************/
+/*******************************************************************************/
 function toggleOpenedDomain (elementTriggerID)
 {
 	console.log("toggled");
@@ -530,22 +445,23 @@ function getIndentation (parentQuestionID, json, domainID, startIndex)
 	var depth = 1;
 	for (var i = startIndex; i >= 0; i--) 
 	{
-		if (json.pages[domainID].questions[0].rows[i].ParentID == 0) break;
-		if (json.pages[domainID].questions[0].rows[i].value == parentQuestionID)
+		if (json.domains[domainID].questions[i].ParentID == 0) break;
+		if (json.domains[domainID].questions[i].idquestion == parentQuestionID)
 		{
 			depth++;
-			parentQuestionID = json.pages[domainID].questions[0].rows[i].ParentID;
+			parentQuestionID = json.domains[domainID].questions[i].ParentID;
 		}
 	}
 	return "\xa0\xa0\xa0\xa0".repeat(depth) + "● ";
 }
 
 
-/*********************************************************/
-/*         Print the question of the desired domain      */
-/*                                                       */
-/*  @Param domainIDs : the list of all involved domains  */
-/*********************************************************/
+/****************************************************************/
+/*           Print the question of the desired domain           */
+/*                                                              */
+/*  @Param json      : the json containing all the information  */
+/*  @Param domainIDs : the list of all involved domains         */
+/****************************************************************/
 function putQuestionInForm (json, domainIDs)
 {
 	var questionID;          // The id of the question in the database
@@ -566,40 +482,40 @@ function putQuestionInForm (json, domainIDs)
 	{
 		domainID = domainIDs[j];
 		console.log("DOMAINID: ", domainID);
-		tbody = document.getElementById("Domain " + json.pages[domainID].questions[0].iddomaine);
+		tbody = document.getElementById("Domain " + json.domains[domainID].iddomaine);
 
-		for (var i = 0; i < json.pages[domainID].questions[0].rows.length; i++) 
+		for (var i = 0; i < json.domains[domainID].questions.length; i++) 
 		{
-			questionID = "Question " + json.pages[domainID].questions[0].rows[i].value;
+			questionID = "Question " + json.domains[domainID].questions[i].idquestion;
 	
 			
 			/* If the question has a parent we put the question under it */
-			if (json.pages[domainID].questions[0].rows[i].ParentID != 0)
+			if (json.domains[domainID].questions[i].ParentID != 0)
 			{
-				parentRow = document.getElementById ("RowID " + json.pages[domainID].questions[0].rows[i].ParentID);	// Get the parent row
+				parentRow = document.getElementById ("RowID " + json.domains[domainID].questions[i].ParentID);	// Get the parent row
 				row = tbody.insertRow(Array.prototype.slice.call(tbody.children).indexOf(parentRow)+1);					// Insert a row under the parent
 				row.className += "hasParent " + parentRow.className;													// Sets the class of the question
 				if (parentRow.classList.contains("hasChild") == false) parentRow.classList.add("hasChild");				// Delete the useless class from the parent
-				question = getIndentation (json.pages[domainID].questions[0].rows[i].ParentID, json, domainID, i-1) + json.pages[domainID].questions[0].rows[i].text;
+				question = getIndentation (json.domains[domainID].questions[i].ParentID, json, domainID, i-1) + json.domains[domainID].questions[i].text;
 			}
 			else // The question has no parent
 			{	
 				var indexRow = i + 1; // We add +1 beacause the fisrt row is here to indicates the corresponding value of the radio buttons
 				if (domainIDs.length > j+1)
 				{	
-					indexRow = Array.prototype.slice.call(tbody.children).indexOf(document.getElementById ("Row Domain " + json.pages[domainIDs[j+1]].questions[0].iddomaine));
+					indexRow = Array.prototype.slice.call(tbody.children).indexOf(document.getElementById ("Row Domain " + json.domains[domainIDs[j+1]].iddomaine));
 				}
 				row = tbody.insertRow(indexRow);
 				if (backgroundColor%2 == 0) row.className += "sombre highlight ";
 				else row.className += "clair highlight ";
 				backgroundColor++;
-				question = json.pages[domainID].questions[0].rows[i].text;
+				question = json.domains[domainID].questions[i].text;
 			}
 
 			cell = row.insertCell (0);
 
 			/* Set row's attributes */
-			row.setAttribute("id", "RowID " + json.pages[domainID].questions[0].rows[i].value);
+			row.setAttribute("id", "RowID " + json.domains[domainID].questions[i].idquestion);
 			/*-----------------------*/
 
 			cell.setAttribute("id", questionID);
@@ -607,12 +523,12 @@ function putQuestionInForm (json, domainIDs)
 			cell.appendChild(document.createTextNode(question));
 	
 
-			if (json.pages[domainID].questions[0].rows[i].NumOfChild <= 0)
+			if (json.domains[domainID].questions[i].NumOfChild <= 0)
 			{
 				cell = row.insertCell (1);	
 				cell.setAttribute("class", "radioButton");
 				th = document.createElement("input");
-				th.name = "Radio Question " + json.pages[domainID].questions[0].rows[i].value;
+				th.name = "Radio Question " + json.domains[domainID].questions[i].idquestion;
 				th.setAttribute("class", "radioButton");
 				th.type = "radio";
 				th.id = domainID + " " + i;
@@ -625,7 +541,7 @@ function putQuestionInForm (json, domainIDs)
 				cell = row.insertCell (2);
 				cell.setAttribute("class", "radioButton");
 				th = document.createElement("input");
-				th.name = "Radio Question " + json.pages[domainID].questions[0].rows[i].value;
+				th.name = "Radio Question " + json.domains[domainID].questions[i].idquestion;
 				th.setAttribute("class", "radioButton");
 				th.type = "radio";
 				th.id = domainID + " " + i;
@@ -637,7 +553,7 @@ function putQuestionInForm (json, domainIDs)
 				cell = row.insertCell (3);
 				cell.setAttribute("class", "radioButton");
 				th = document.createElement("input");
-				th.name = "Radio Question " + json.pages[domainID].questions[0].rows[i].value;
+				th.name = "Radio Question " + json.domains[domainID].questions[i].idquestion;
 				th.setAttribute("class", "radioButton");
 				th.type = "radio";
 				th.id = domainID + " " + i;
@@ -649,7 +565,7 @@ function putQuestionInForm (json, domainIDs)
 				cell = row.insertCell (4);
 				cell.setAttribute("class", "radioButton");
 				th = document.createElement("input");
-				th.name = "Radio Question " + json.pages[domainID].questions[0].rows[i].value;
+				th.name = "Radio Question " + json.domains[domainID].questions[i].idquestion;
 				th.setAttribute("class", "radioButton");
 				th.type = "radio";
 				th.id = domainID + " " + i;
@@ -661,7 +577,7 @@ function putQuestionInForm (json, domainIDs)
 				cell = row.insertCell (5);
 				cell.setAttribute("class", "radioButton");
 				th = document.createElement("input");
-				th.name = "Radio Question " + json.pages[domainID].questions[0].rows[i].value;
+				th.name = "Radio Question " + json.domains[domainID].questions[i].idquestion;
 				th.setAttribute("class", "radioButton");
 				th.type = "radio";
 				th.id = domainID + " " + i;
@@ -673,7 +589,7 @@ function putQuestionInForm (json, domainIDs)
 				cell = row.insertCell (6);
 				cell.setAttribute("class", "radioButton");
 				th = document.createElement("input");
-				th.name = "Radio Question " + json.pages[domainID].questions[0].rows[i].value;
+				th.name = "Radio Question " + json.domains[domainID].questions[i].idquestion;
 				th.id = domainID + " " + i;
 				th.setAttribute("onchange", "saveRadioChoice()");
 				th.setAttribute("class", "radioButton");
@@ -687,7 +603,7 @@ function putQuestionInForm (json, domainIDs)
 				cell = row.insertCell (7);
 				cell.setAttribute("class", "radioButton");
 				th = document.createElement("input");
-				th.name = "Radio Question " + json.pages[domainID].questions[0].rows[i].value;
+				th.name = "Radio Question " + json.domains[domainID].questions[i].idquestion;
 				th.setAttribute("class", "radioButton");
 				th.type = "radio";
 				th.id = domainID + " " + i;
@@ -709,11 +625,14 @@ function putQuestionInForm (json, domainIDs)
 				label = document.createElement("label");
 				label.appendChild(document.createTextNode("Oui: "));
 				th = document.createElement("input");
-				th.name = "Radio Question " + json.pages[domainID].questions[0].rows[i].value;
+				th.name = "Radio Question " + json.domains[domainID].questions[i].idquestion;
 				th.setAttribute("class", "radioButton");
 				th.type = "radio";
+				th.id = domainID + " " + i;
 				th.checked = true;
 				th.value = 8;
+				json.domains[domainID].questions[i].answer = 8;
+				th.setAttribute("onchange", "saveRadioChoice()");
 				cell.appendChild(label);
 				cell.appendChild(th);
 
@@ -722,10 +641,12 @@ function putQuestionInForm (json, domainIDs)
 				label = document.createElement("label");
 				label.appendChild(document.createTextNode("Non: "));
 				th = document.createElement("input");
-				th.name = "Radio Question " + json.pages[domainID].questions[0].rows[i].value;	
+				th.name = "Radio Question " + json.domains[domainID].questions[i].idquestion;	
 				th.setAttribute("class", "radioButton");
-				th.type = "radio";			
+				th.type = "radio";
+				th.id = domainID + " " + i;		
 				th.value = 9;
+				th.setAttribute("onchange", "saveRadioChoice()");
 				cell.appendChild(label);
 				cell.appendChild(th);
 			}
@@ -741,8 +662,26 @@ function saveRadioChoice()
 	var myRegexp = /(\d+) (\d+)/g;
 	var match = myRegexp.exec(myString);
 	
-	//console.log(match); // abc
-	console.log("Old value:", json.pages[match[1]].questions[0].rows[match[2]].answer);
-	json.pages[match[1]].questions[0].rows[match[2]].answer = event.srcElement.value;
-	console.log("New value:", json.pages[match[1]].questions[0].rows[match[2]].answer);
+	console.log("Old value:", json.domains[match[1]].questions[match[2]].answer);
+	json.domains[match[1]].questions[match[2]].answer = event.srcElement.value;
+	console.log("New value:", json.domains[match[1]].questions[match[2]].answer);
+}
+
+//Gets the JSON file chosen by the user
+function loadJson() {
+	$.get('/getCoefficients', function(coef_imported) {
+		coef = coef_imported;
+		var userJson = $('#userJson').get(0).files[0];
+		if(userJson) {
+			var reader = new FileReader();
+			reader.readAsText(userJson, "UTF-8");
+			reader.onload = function (evt) {
+				json = $.parseJSON(evt.target.result);
+				document.getElementById("uploadBtn").setAttribute("style", "visibility: collapse;");
+			}
+			reader.onerror = function(evt) {
+				alert("File not found ! ");
+			}
+		}
+	});
 }
