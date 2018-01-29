@@ -8,6 +8,8 @@ var async = require('async');
 var jquery = require('jquery');
 var dbManager = require('./Scripts/Private/dbManager.js');
 var packageManager = require('./Scripts/Private/packageManager.js');
+var usedPackageID;
+
 
 var domainsAndQuestions = {
 	domains: [],
@@ -283,7 +285,7 @@ function getAllQuestionsIdByPackageId(pool, id, callback) {
 				throw err;
 			}
 			else {
-				connection.query("SELECT * FROM package_question_list WHERE PackageID = " + mysql.escape(id), function(err, res) {
+				connection.query("SELECT QuestionID FROM package_question_list WHERE PackageID = " + mysql.escape(id), function(err, res) {
 					connection.release();
 					if(err) throw err;
 					//console.log("getall : ", res);
@@ -482,23 +484,23 @@ function transformIntoSurvey(domains) {
 }
 
 
-function transformIntoSurvey2() {
+function transformIntoSurvey2(array) {
 	var json = {domains:[]};
 
 	//console.log(domains);
-	for(var i=0; i < domainsAndQuestions.domains.length; i++) {
+	for(var i=0; i < array.domains.length; i++) {
 		var domain = 
 				{
-					name:domainsAndQuestions.domains[i].Nom+i,
-					title: domainsAndQuestions.domains[i].Nom,
-					iddomaine: domainsAndQuestions.domains[i].iddomaine,
-					ParentID: domainsAndQuestions.domains[i].ParentID,
-					NumOfChild: domainsAndQuestions.domains[i].NumOfChild,
+					name: array.domains[i].Nom+i,
+					title: array.domains[i].Nom,
+					iddomaine: array.domains[i].iddomaine,
+					ParentID: array.domains[i].ParentID,
+					NumOfChild: array.domains[i].NumOfChild,
 					questions:[]
 				};
-		for(var j=0; j < domainsAndQuestions.questions[i].length; j++)
+		for(var j=0; j < array.questions[i].length; j++)
 		{
-			domain.questions.push({idquestion: domainsAndQuestions.questions[i][j].idquestion, ParentID: domainsAndQuestions.questions[i][j].ParentID, NumOfChild: domainsAndQuestions.questions[i][j].NumOfChild, text: domainsAndQuestions.questions[i][j].Question, coef: domainsAndQuestions.questions[i][j].CoeffID, answer: 6});
+			domain.questions.push({idquestion: array.questions[i][j].idquestion, ParentID: array.questions[i][j].ParentID, NumOfChild: array.questions[i][j].NumOfChild, text: array.questions[i][j].Question, coef: array.questions[i][j].CoeffID, answer: 6});
 		}
 		json.domains.push(domain);
 
@@ -512,8 +514,8 @@ function transformIntoSurvey2() {
 
 function createSurveyFromQuestions(pool, questions, callback) {
 	try{
-		callback(transformIntoSurvey2());
 		//console.log("questions: ", questions);
+		callback(transformIntoSurvey2(questions));
 		/*associateQuestionsToDomainName(pool, questions, function(sortedQuestions) {
 			//console.log("sortedquestions: ", sortedQuestions);
 			callback(transformIntoSurvey(sortedQuestions));
@@ -560,7 +562,7 @@ app.get('/getAllQuestionsByPackageId/:packageId', function(req, res) {
 	if (res) {
 		getAllQuestionsIdByPackageId(pool, req.params.packageId, function(q) {
 			getAllQuestionsById(pool, q, function(questions){
-				console.log(questions);
+				//console.log(questions);
 				res.send(questions);
 			});
 		});
@@ -570,7 +572,7 @@ app.get('/getAllQuestionsByPackageId/:packageId', function(req, res) {
 app.get('/getAssociatedDomainName/:domainId', function(req,res) {
 	if(res) {
 		getAssociatedDomainName(pool, req.params.domainId, function(dom) {
-			console.log(dom[0].Nom);
+			//console.log(dom[0].Nom);
 			res.send(dom[0].Nom);
 		});
 	}
@@ -587,11 +589,45 @@ app.get('/getAllPackages', function(req, res) {
 app.get('/getPackage/:packageId', function(req, res) {
 	if(res) {
 		//console.log(req.params.packageId);
-		getAllQuestionsIdByPackageId(pool, req.params.packageId, function(q) {
-			getAllQuestionsById(pool, q, function(questions){
-				createSurveyFromQuestions(pool, questions, function(survey) {
-					//console.log(survey.pages[0]);
-					res.send(survey);
+		getAllQuestionsIdByPackageId(pool, req.params.packageId, function(questions)
+		{
+			//console.log(questions);
+			getAllDomains (pool, function (result)
+			{
+				getAllDomainsQuestions(pool, result, function (r_domainsAndQuestions)
+				{
+					r_domainsAndQuestions
+					var breaked = false;
+					for (var i = 0; i < r_domainsAndQuestions.domains.length; i++)
+					{
+						for (var j = 0; j < r_domainsAndQuestions.questions[i].length; j++)
+						{
+							breaked = false;
+							for (var k = 0; k < questions.length; k++)
+							{
+								if (questions[k].QuestionID == r_domainsAndQuestions.questions[i][j].idquestion)
+								{
+									breaked = true;
+									break;
+								}
+							}
+							if (breaked == false) 
+							{
+								r_domainsAndQuestions.questions[i].splice(j, 1);
+								j--;
+							}
+						}
+						if (r_domainsAndQuestions.questions[i].length <= 0)
+						{
+							r_domainsAndQuestions.domains.splice (i, 1);
+							r_domainsAndQuestions.questions.splice (i, 1);
+							i--;
+						}
+					}
+					createSurveyFromQuestions(pool, r_domainsAndQuestions, function(survey)
+					{
+						res.send(survey);
+					});
 				});
 			});
 		});
@@ -717,12 +753,24 @@ app.get('/core.js', function(req, res) {
 	res.sendFile(__dirname + '/Public/core.js');
 });
 
+app.post('/packageChooser/:id', function(req, res) {
+	usedPackageID = req.param.id;
+});
+
+app.get('/usedPackageID', function(req, res) {
+	res.send(usedPackageID);
+});
+
 app.get('/dbManager.js', function(req, res) {
 	res.sendFile(__dirname + '/Scripts/Public/dbManager.js');
 });
 
 app.get('/packageManager.js', function(req, res) {
 	res.sendFile(__dirname + '/Scripts/Public/packageManager.js');
+});
+
+app.get('/packageChooser.js', function(req, res) {
+	res.sendFile(__dirname + '/Scripts/Public/packageChooser.js');
 });
 
 app.get('/audit.js', function(req, res) {
@@ -737,12 +785,20 @@ app.get('/auditStyle.css', function(req, res) {
 	res.sendFile(__dirname + '/CSS/auditStyle.css');
 });
 
+app.get('/packageStyle.css', function(req, res) {
+	res.sendFile(__dirname + '/CSS/packageStyle.css');
+});
+
 app.get('/manager.css', function(req, res) {
 	res.sendFile(__dirname + '/CSS/manager.css');
 });
 
 app.get('/newAudit.htm', function(req, res) {
 	res.sendFile(__dirname + '/Public/newAudit.htm');
+});
+
+app.get('/packageChooser.htm', function(req, res) {
+	res.sendFile(__dirname + '/Public/packageChooser.htm');
 });
 
 app.get('/newAuditV2.htm', function(req, res) {

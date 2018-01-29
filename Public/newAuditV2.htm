@@ -10,7 +10,14 @@
     		</div>
     		<link href="manager.css" rel="stylesheet">
 			<link href="auditStyle.css" rel="stylesheet">
+			<link href="packageStyle.css" rel="stylesheet">
+
+			<div id="Package" class="verticalCenter" style="padding-bottom:10px;">
+				<span style="font-weight: bold; white-space: pre;">Choisissez le package: </span>
+				<span id="PackageSelector" class="select"></span>
+			</div>
 			
+			<script type="text/javascript" src="packageChooser.js"></script>
 			<script type="text/javascript" src="audit.js"></script>
     		<div class="panel-body card-block">
     			
@@ -21,8 +28,9 @@
 				</div>
 
     			<div id="questionnaireButtons" class="panel-footer card-footer">
-    				<input id="graphBtn" type="button" class="buttonQuestionnaire" value="View Graph">
-    				<a id="saveAudit" class="buttonQuestionnaire" onclick="updateJsonDownloader()">Save Audit</a>
+    				<input type="button" id="confirmChoice" onclick="confirmChoice()" value="Confirmer le choix du package"></input>
+    				<input id="graphBtn" type="button" class="buttonQuestionnaire" value="View Graph" hidden>
+    				<a id="saveAudit" class="buttonQuestionnaire" onclick="updateJsonDownloader()" hidden>Save Audit</a>
     			</div>
     		</div>
     	</div>

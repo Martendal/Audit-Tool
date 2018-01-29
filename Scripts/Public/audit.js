@@ -1,8 +1,8 @@
-var id = '1';
 var page = 0;
 var pagemax = 0;
 var json = 0;
 var coef = 0;
+var isLoad = false;
 
 //Load the json from the server
 function getJson(id) {
@@ -13,10 +13,7 @@ function getJson(id) {
 
 		});
 		coef = coef_imported;
-
-		var graphBtn = document.getElementById("graphBtn");
-        graphBtn.setAttribute("onclick", "generateGraph(json)");
-	});
+    });
 }
 
 
@@ -208,8 +205,6 @@ function regroupSubDomainAndMainDomain ()
 		doc.save('audit-result.pdf');
 	}
 
-
-	getJson(1);
 	
 	
 	$('#inputName').keyup(function() {
@@ -236,8 +231,15 @@ var packageID;
 
 function renderView (json)
 {
+	var graphBtn = document.getElementById("graphBtn");
+    graphBtn.setAttribute("onclick", "generateGraph(json)");
 	console.log("json:", json);
 	// Add the different domains as tab
+	if (json.domains.length <= 0) return;
+
+	document.getElementById("graphBtn").removeAttribute("hidden");
+	document.getElementById("saveAudit").removeAttribute("hidden");
+
 	for (var i = 0; i < json.domains.length; i++) 
 	{	
 		if (parseInt(json.domains[i].ParentID) == 0)
@@ -531,7 +533,7 @@ function putQuestionInForm (json, domainIDs)
 				th.name = "Radio Question " + json.domains[domainID].questions[i].idquestion;
 				th.setAttribute("class", "radioButton");
 				th.type = "radio";
-				th.id = domainID + " " + i;
+				th.id = domainID + " " + i  + " " + 1;
 				th.setAttribute("onchange", "saveRadioChoice()");
 				th.value = 1;
 				cell.appendChild(th);
@@ -544,7 +546,7 @@ function putQuestionInForm (json, domainIDs)
 				th.name = "Radio Question " + json.domains[domainID].questions[i].idquestion;
 				th.setAttribute("class", "radioButton");
 				th.type = "radio";
-				th.id = domainID + " " + i;
+				th.id = domainID + " " + i  + " " + 2;
 				th.setAttribute("onchange", "saveRadioChoice()");
 				th.value = 2;
 				cell.appendChild(th);
@@ -556,7 +558,7 @@ function putQuestionInForm (json, domainIDs)
 				th.name = "Radio Question " + json.domains[domainID].questions[i].idquestion;
 				th.setAttribute("class", "radioButton");
 				th.type = "radio";
-				th.id = domainID + " " + i;
+				th.id = domainID + " " + i  + " " + 3;
 				th.setAttribute("onchange", "saveRadioChoice()");
 				th.value = 3;
 				cell.appendChild(th);
@@ -568,7 +570,7 @@ function putQuestionInForm (json, domainIDs)
 				th.name = "Radio Question " + json.domains[domainID].questions[i].idquestion;
 				th.setAttribute("class", "radioButton");
 				th.type = "radio";
-				th.id = domainID + " " + i;
+				th.id = domainID + " " + i  + " " + 4;
 				th.setAttribute("onchange", "saveRadioChoice()");
 				th.value = 4;
 				cell.appendChild(th);
@@ -580,7 +582,7 @@ function putQuestionInForm (json, domainIDs)
 				th.name = "Radio Question " + json.domains[domainID].questions[i].idquestion;
 				th.setAttribute("class", "radioButton");
 				th.type = "radio";
-				th.id = domainID + " " + i;
+				th.id = domainID + " " + i + " " + 5;
 				th.setAttribute("onchange", "saveRadioChoice()");
 				th.value = 5;
 				cell.appendChild(th);
@@ -590,7 +592,7 @@ function putQuestionInForm (json, domainIDs)
 				cell.setAttribute("class", "radioButton");
 				th = document.createElement("input");
 				th.name = "Radio Question " + json.domains[domainID].questions[i].idquestion;
-				th.id = domainID + " " + i;
+				th.id = domainID + " " + i  + " " + 6;
 				th.setAttribute("onchange", "saveRadioChoice()");
 				th.setAttribute("class", "radioButton");
 				th.type = "radio";
@@ -606,10 +608,12 @@ function putQuestionInForm (json, domainIDs)
 				th.name = "Radio Question " + json.domains[domainID].questions[i].idquestion;
 				th.setAttribute("class", "radioButton");
 				th.type = "radio";
-				th.id = domainID + " " + i;
+				th.id = domainID + " " + i  + " " + 7;
 				th.setAttribute("onchange", "saveRadioChoice()");
 				th.value = 7;
 				cell.appendChild(th);
+
+
 			}
 
 			else
@@ -628,10 +632,9 @@ function putQuestionInForm (json, domainIDs)
 				th.name = "Radio Question " + json.domains[domainID].questions[i].idquestion;
 				th.setAttribute("class", "radioButton");
 				th.type = "radio";
-				th.id = domainID + " " + i;
-				th.checked = true;
+				th.id = domainID + " " + i  + " " + 8;
 				th.value = 8;
-				json.domains[domainID].questions[i].answer = 8;
+				if (isLoad == false) json.domains[domainID].questions[i].answer = 8;
 				th.setAttribute("onchange", "saveRadioChoice()");
 				cell.appendChild(label);
 				cell.appendChild(th);
@@ -644,12 +647,15 @@ function putQuestionInForm (json, domainIDs)
 				th.name = "Radio Question " + json.domains[domainID].questions[i].idquestion;	
 				th.setAttribute("class", "radioButton");
 				th.type = "radio";
-				th.id = domainID + " " + i;		
+				th.id = domainID + " " + i + " " + 9;		
 				th.value = 9;
 				th.setAttribute("onchange", "saveRadioChoice()");
 				cell.appendChild(label);
 				cell.appendChild(th);
 			}
+
+
+			document.getElementById(domainID + " " + i  + " " + json.domains[domainID].questions[i].answer).checked = true;
 
 		}
 	}
@@ -663,7 +669,7 @@ function saveRadioChoice()
 	var match = myRegexp.exec(myString);
 	
 	console.log("Old value:", json.domains[match[1]].questions[match[2]].answer);
-	json.domains[match[1]].questions[match[2]].answer = event.srcElement.value;
+	json.domains[match[1]].questions[match[2]].answer = parseInt(event.srcElement.value);
 	console.log("New value:", json.domains[match[1]].questions[match[2]].answer);
 }
 
@@ -677,6 +683,8 @@ function loadJson() {
 			reader.readAsText(userJson, "UTF-8");
 			reader.onload = function (evt) {
 				json = $.parseJSON(evt.target.result);
+				isLoad = true;
+				renderView (json);
 				document.getElementById("uploadBtn").setAttribute("style", "visibility: collapse;");
 			}
 			reader.onerror = function(evt) {

@@ -180,7 +180,7 @@ packageManager.prototype.addPackage = function (pool, p_Nom)
                 });
 
                 // Insert the new package in the database
-                connection.query("INSERT INTO Package (Nom) " +
+                connection.query("INSERT INTO package (Nom) " +
                                   "value (" + mysql.escape(p_Nom) + ")"                   
                 , function(err, res)
                 {
