@@ -172,7 +172,7 @@ packageManager.prototype.addPackage = function (pool, p_Nom)
             }
             else {
                 // Reset the auto-increment in order to avoid big hole between ids
-                connection.query("ALTER TABLE Package AUTO_INCREMENT = 1"
+                connection.query("ALTER TABLE package AUTO_INCREMENT = 1"
                 , function(err, res)
                 {
                     if(err) throw err;
@@ -180,7 +180,7 @@ packageManager.prototype.addPackage = function (pool, p_Nom)
                 });
 
                 // Insert the new package in the database
-                connection.query("INSERT INTO Package (Nom) " +
+                connection.query("INSERT INTO package (Nom) " +
                                   "value (" + mysql.escape(p_Nom) + ")"                   
                 , function(err, res)
                 {

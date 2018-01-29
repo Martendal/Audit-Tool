@@ -123,6 +123,7 @@ function regroupSubDomainAndMainDomain ()
 	        var name = studiedJSON.domains[l].name;
 	        var val = 0;
 	        var currentCoef = 0;
+	        var coefSum = 0;
 	        var len = studiedJSON.domains[l].questions.length;
 
 	        for(r = 0; r < studiedJSON.domains[l].questions.length; r++)
@@ -136,11 +137,13 @@ function regroupSubDomainAndMainDomain ()
 	            {
 	                meantmp += val*currentCoef;
 	                meantmp2 += val*currentCoef;
+	                coefSum = coefSum+currentCoef;
 	            }
 
 	            //The answer is "I don't know", so we have to consider extremes values
 	            else if(val == 6) {
 	                meantmp2 += 5*currentCoef;
+	                coefSum = coefSum+currentCoef;
 	            }
 
 	            //The answer is "not concerned / yes / no", so we don't consider this question in the mean calculation
@@ -151,8 +154,8 @@ function regroupSubDomainAndMainDomain ()
 	        }
 
 	        //Calculation of the means to use in the graph
-	        meantmp = meantmp/len;
-	        meantmp2 = meantmp2/len;
+	        meantmp = meantmp/coefSum;
+	        meantmp2 = meantmp2/coefSum;
 	        means.push(meantmp);
 	        meansmax.push(meantmp2);
 	    }
