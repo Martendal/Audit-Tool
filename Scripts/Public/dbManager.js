@@ -1188,7 +1188,6 @@ function addDomain (parentDomainID)
 /*********************************************************************************************/
 function printAddDomainElements (parentDomainID)
 {
-	event.stopPropagation();
 	if (actualAction != null) actualAction.container.removeChild(actualAction.div);
 	
 	var domainContainer;									// The row that launched the function
@@ -1207,6 +1206,7 @@ function printAddDomainElements (parentDomainID)
 	/* Sets the title of the action */
 	if (parentDomainID != null)
 	{
+		event.stopPropagation();
 		console.log("parentDomainID: ", parentDomainID);
 		domainContainer = document.getElementById("Domain " + domainsAndQuestions.domains[parentDomainID].iddomaine);
 		console.log("domainContainer: ", domainContainer);

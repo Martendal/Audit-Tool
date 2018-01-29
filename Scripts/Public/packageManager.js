@@ -331,7 +331,7 @@ function putQuestionInForm (domainIDs)
 				if (backgroundColor%2 == 0) row.className += "sombre highlight ";
 				else row.className += "clair highlight ";
 				backgroundColor++;
-				question = domainsAndQuestions.questions[domainID][i].Question
+				question = domainsAndQuestions.questions[domainID][i].Question;
 			}
 	
 			
