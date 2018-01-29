@@ -586,6 +586,22 @@ app.get('/getAllPackages', function(req, res) {
 	}
 });
 
+
+
+function getTotalNumOfChild (domainID, json)
+{
+	
+		numOfTotalChild = json.domains[domainID].NumOfChild;
+		for (var i = domainID + 1; i < json.domains.length; i++)
+		{
+			if (json.domains[i].NumOfChild > 0 && json.domains[i].ParentID == json.domains[domainID].iddomaine)
+				numOfTotalChild += getTotalNumOfChild (i, json);
+		}
+	
+	return numOfTotalChild;
+}
+
+
 app.get('/getPackage/:packageId', function(req, res) {
 	if(res) {
 		//console.log(req.params.packageId);
@@ -603,25 +619,55 @@ app.get('/getPackage/:packageId', function(req, res) {
 						for (var j = 0; j < r_domainsAndQuestions.questions[i].length; j++)
 						{
 							breaked = false;
+
 							for (var k = 0; k < questions.length; k++)
 							{
+
+								console.log("1", questions[k].QuestionID);
+								console.log("2:", r_domainsAndQuestions.questions[i][j].idquestion);
 								if (questions[k].QuestionID == r_domainsAndQuestions.questions[i][j].idquestion)
 								{
+									console.log("Break");
 									breaked = true;
 									break;
 								}
 							}
 							if (breaked == false) 
 							{
+								console.log("Delete question");
 								r_domainsAndQuestions.questions[i].splice(j, 1);
 								j--;
 							}
 						}
-						if (r_domainsAndQuestions.questions[i].length <= 0)
+						/*if (r_domainsAndQuestions.questions[i].length <= 0)
 						{
+							console.log("Delete domain:", r_domainsAndQuestions.domains[i].iddomaine);
 							r_domainsAndQuestions.domains.splice (i, 1);
 							r_domainsAndQuestions.questions.splice (i, 1);
 							i--;
+						}*/
+					}
+					var numOfTotalChild;
+					for (var i = 0; i < r_domainsAndQuestions.domains.length; i++)
+					{
+						if (r_domainsAndQuestions.questions[i].length <= 0)
+						{
+							breaked = false;
+							numOfTotalChild = getTotalNumOfChild(i, r_domainsAndQuestions);
+							for (var j = 1; j <= numOfTotalChild; j++)
+							{
+								if (r_domainsAndQuestions.questions[j].length > 0)
+								{
+									breaked = true;
+									break;
+								}
+							}
+							if (breaked == false)
+							{
+								r_domainsAndQuestions.domains.splice(i, numOfTotalChild+1);
+								r_domainsAndQuestions.questions.splice(i, numOfTotalChild+1);
+								i--;
+							}
 						}
 					}
 					createSurveyFromQuestions(pool, r_domainsAndQuestions, function(survey)
