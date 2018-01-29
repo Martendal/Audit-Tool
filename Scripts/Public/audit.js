@@ -73,12 +73,13 @@ function regroupSubDomainAndMainDomain ()
 		{
 			numOfTotalChild = getTotalNumOfChild (null, i, studiedJSON);
 			j = 1;
-			while (j <= numOfTotalChild)
+			do
 			{
+				console.log("i", i);
 				studiedJSON.domains[i].questions = studiedJSON.domains[i].questions.concat(studiedJSON.domains[i+j].questions); // Concat the question of the sub-domain with the main domain one's
 				j++;
-			}
-			studiedJSON.domains.splice (i+1, numOfTotalChild); // Deletes the sub-domains in order to avoid their apparition on the graph
+			} while (j < numOfTotalChild)
+			studiedJSON.domains.splice (i+1, j-1); // Deletes the sub-domains in order to avoid their apparition on the graph
 		}
 
 		// Deletes all the questions that have a parent set to "no"
@@ -280,56 +281,58 @@ function printDomains (selectedDomainID, json)
 	var cell;			// A cell
 	var th;
 
-	row = tbody.insertRow(-1);
-	row.insertCell(0);
-	cell = row.insertCell (1);
-	th = document.createElement("th");
-	th.setAttribute("class", "header");
-	th.appendChild(document.createTextNode("1"));
-	cell.appendChild(th);
-
-
-	cell = row.insertCell (2);
-	th = document.createElement("th");
-	th.setAttribute("class", "header");
-	th.appendChild(document.createTextNode("2"));
-	cell.appendChild(th);
-
-
-	cell = row.insertCell (3);
-	th = document.createElement("th");
-	th.setAttribute("class", "header");
-	th.appendChild(document.createTextNode("3"));
-	cell.appendChild(th);
-
-
-	cell = row.insertCell (4);
-	th = document.createElement("th");
-	th.setAttribute("class", "header");
-	th.appendChild(document.createTextNode("4"));
-	cell.appendChild(th);
-
-
-	cell = row.insertCell (5);
-	th = document.createElement("th");
-	th.setAttribute("class", "header");
-	th.appendChild(document.createTextNode("5"));
-	cell.appendChild(th);
-
-
-	cell = row.insertCell (6);
-	th = document.createElement("th");
-	th.setAttribute("class", "header");
-	th.appendChild(document.createTextNode("I don't know"));
-	cell.appendChild(th);
-
-
-	cell = row.insertCell (7);
-	th = document.createElement("th");
-	th.setAttribute("class", "header");
-	th.appendChild(document.createTextNode("Not concerned"));
-	cell.appendChild(th);
-
+	if (json.domains[selectedDomainID].questions.length > 0)
+	{
+		row = tbody.insertRow(-1);
+		row.insertCell(0);
+		cell = row.insertCell (1);
+		th = document.createElement("th");
+		th.setAttribute("class", "header");
+		th.appendChild(document.createTextNode("1"));
+		cell.appendChild(th);
+	
+	
+		cell = row.insertCell (2);
+		th = document.createElement("th");
+		th.setAttribute("class", "header");
+		th.appendChild(document.createTextNode("2"));
+		cell.appendChild(th);
+	
+	
+		cell = row.insertCell (3);
+		th = document.createElement("th");
+		th.setAttribute("class", "header");
+		th.appendChild(document.createTextNode("3"));
+		cell.appendChild(th);
+	
+	
+		cell = row.insertCell (4);
+		th = document.createElement("th");
+		th.setAttribute("class", "header");
+		th.appendChild(document.createTextNode("4"));
+		cell.appendChild(th);
+	
+	
+		cell = row.insertCell (5);
+		th = document.createElement("th");
+		th.setAttribute("class", "header");
+		th.appendChild(document.createTextNode("5"));
+		cell.appendChild(th);
+	
+	
+		cell = row.insertCell (6);
+		th = document.createElement("th");
+		th.setAttribute("class", "header");
+		th.appendChild(document.createTextNode("I don't know"));
+		cell.appendChild(th);
+	
+	
+		cell = row.insertCell (7);
+		th = document.createElement("th");
+		th.setAttribute("class", "header");
+		th.appendChild(document.createTextNode("Not concerned"));
+		cell.appendChild(th);
+	}
 
 	domainIDs.push(selectedDomainID); // Put the Main domain ID into the involved IDs array
 
